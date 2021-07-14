@@ -10,6 +10,15 @@ locals {
   }
 }
 
+// IAM role for k8s pods
+module "iam_role_assumed_k8s" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
+  version = "4.2.0"
+
+  trusted_role_arns = ["arn:aws:iam::${var.kubernetes_account_number}:role/eks-hellman-kiam-server"]
+}
+
+
 // Networking
 
 resource "aws_default_vpc" "default" {
@@ -70,7 +79,7 @@ module "db" {
   # NOTE: Do NOT use 'user' as the value for 'username' as it throws:
   # "Error creating DB Instance: InvalidParameterValue: MasterUsername
   # user cannot be used as it is a reserved word used by the engine"
-  name                   = local.name
+  name                   = "${local.name}"
   username               = "superuser"
   create_random_password = true
   random_password_length = 32
@@ -113,6 +122,7 @@ module "elasticsearch" {
   version = "0.33.0"
 
   namespace             = "dfds"
+  name                  = "${local.name}"
   vpc_id                = aws_default_vpc.default.id
   subnet_ids            = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
   tags                  = local.tags
@@ -122,5 +132,5 @@ module "elasticsearch" {
   ebs_volume_size       = 10
   ebs_volume_type       = "gp2"
   iam_actions           = ["es:ESHttpGet", "es:ESHttpPut", "es:ESHttpPost"]
-
+  iam_role_arns         = [module.iam_role_assumed_k8s.iam_role_arn]
 }
