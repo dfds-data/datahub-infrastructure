@@ -16,6 +16,11 @@ module "iam_role_assumed_k8s" {
   version = "4.2.0"
 
   trusted_role_arns = ["arn:aws:iam::${var.kubernetes_account_number}:role/eks-hellman-kiam-server"]
+  trusted_role_actions = [
+    "sts:AssumeRole"
+  ]
+  role_name = "$(locals.name)-assumed-k8s"
+  tags      = local.tags
 }
 
 
@@ -79,7 +84,7 @@ module "db" {
   # NOTE: Do NOT use 'user' as the value for 'username' as it throws:
   # "Error creating DB Instance: InvalidParameterValue: MasterUsername
   # user cannot be used as it is a reserved word used by the engine"
-  name                   = "${local.name}"
+  name                   = local.name
   username               = "superuser"
   create_random_password = true
   random_password_length = 32
@@ -121,16 +126,18 @@ module "elasticsearch" {
   source  = "cloudposse/elasticsearch/aws"
   version = "0.33.0"
 
-  namespace             = "dfds"
-  name                  = "${local.name}"
-  vpc_id                = aws_default_vpc.default.id
-  subnet_ids            = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
-  tags                  = local.tags
-  elasticsearch_version = "7.4"
-  instance_type         = "t3.small.elasticsearch"
-  instance_count        = 1
-  ebs_volume_size       = 10
-  ebs_volume_type       = "gp2"
-  iam_actions           = ["es:ESHttpGet", "es:ESHttpPut", "es:ESHttpPost"]
-  iam_role_arns         = [module.iam_role_assumed_k8s.iam_role_arn]
+  namespace                      = "dfds"
+  name                           = local.name
+  vpc_id                         = aws_default_vpc.default.id
+  subnet_ids                     = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
+  tags                           = local.tags
+  elasticsearch_version          = "7.10"
+  instance_type                  = "t3.small.elasticsearch"
+  instance_count                 = 2
+  warm_count                     = 0
+  ebs_volume_size                = 10
+  ebs_volume_type                = "gp2"
+  iam_actions                    = ["es:ESHttpGet", "es:ESHttpPut", "es:ESHttpPost"]
+  iam_role_arns                  = [module.iam_role_assumed_k8s.iam_role_arn]
+  create_iam_service_linked_role = false
 }
