@@ -19,8 +19,10 @@ module "iam_role_assumed_k8s" {
   trusted_role_actions = [
     "sts:AssumeRole"
   ]
-  role_name = "$(locals.name)-assumed-k8s"
-  tags      = local.tags
+  role_name         = "${local.name}-assumed-k8s"
+  tags              = local.tags
+  create_role       = true
+  role_requires_mfa = false
 }
 
 
