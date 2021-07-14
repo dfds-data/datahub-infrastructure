@@ -143,6 +143,8 @@ resource "aws_ssm_parameter" "database_password" {
   value = jsonencode({
     "username" = module.db.db_instance_username
     "password" = module.db.db_instance_password
+    "host"     = module.db.db_instance_endpoint
+    "port"     = module.db.db_instance_port
   })
   overwrite = true
 }
