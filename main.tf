@@ -29,9 +29,11 @@ resource "aws_default_subnet" "default_az2" {
     Name = "Default subnet for eu-central-1b"
   }
 }
+// RDS
+
 module "security_group" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "~> 3"
+  version = "4.3.0"
 
   name        = "${local.name}-database-security-group"
   description = "${local.name} backend security group"
@@ -47,10 +49,9 @@ module "security_group" {
   tags = local.tags
 }
 
-// RDS
-
 module "db" {
-  source = "terraform-aws-modules/rds/aws"
+  source  = "terraform-aws-modules/rds/aws"
+  version = "3.3.0"
 
   identifier = local.name
 
@@ -58,10 +59,11 @@ module "db" {
   create_db_parameter_group = true
 
   # All available versions: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts
-  engine         = "postgres"
-  engine_version = "13"
-  family         = "postgres13" # DB parameter group
-  instance_class = "db.t3.micro"
+  engine                      = "postgres"
+  engine_version              = "13"
+  family                      = "postgres13" # DB parameter group
+  instance_class              = "db.t3.micro"
+  allow_major_version_upgrade = true
 
   allocated_storage = 20
 
@@ -75,7 +77,7 @@ module "db" {
   port                   = 5432
   publicly_accessible    = true
 
-  vpc_security_group_ids = [module.security_group.this_security_group_id]
+  vpc_security_group_ids = [module.security_group.security_group_id]
 
   maintenance_window = "Mon:00:00-Mon:03:00"
   backup_window      = "03:00-06:00"
@@ -98,10 +100,27 @@ resource "aws_ssm_parameter" "database_password" {
   description = "Password for the backend database for ${local.name}"
   type        = "SecureString"
   value = jsonencode({
-    "username" = module.db.this_db_instance_username
-    "password" = module.db.this_db_instance_password
+    "username" = module.db.db_instance_username
+    "password" = module.db.db_instance_password
   })
   overwrite = true
 }
 
 // Elastic
+
+module "elasticsearch" {
+  source  = "cloudposse/elasticsearch/aws"
+  version = "0.33.0"
+
+  namespace             = "dfds"
+  vpc_id                = aws_default_vpc.default.id
+  subnet_ids            = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
+  tags                  = local.tags
+  elasticsearch_version = "7.4"
+  instance_type         = "t3.small.elasticsearch"
+  instance_count        = 1
+  ebs_volume_size       = 10
+  ebs_volume_type       = "gp2"
+  iam_actions           = ["es:ESHttpGet", "es:ESHttpPut", "es:ESHttpPost"]
+
+}
