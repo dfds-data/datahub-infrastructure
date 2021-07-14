@@ -10,7 +10,7 @@ locals {
   }
 }
 
-// IAM role for k8s pods
+// IAM role for k8s pods to assume, which gives access to resources needed
 module "iam_role_assumed_k8s" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
   version = "4.2.0"
@@ -23,6 +23,31 @@ module "iam_role_assumed_k8s" {
   tags              = local.tags
   create_role       = true
   role_requires_mfa = false
+}
+
+data "aws_iam_policy_document" "datahub_policy" {
+  statement {
+    sid       = "FullApiAccess"
+    actions   = ["es:ESHttpGet", "es:ESHttpPut", "es:ESHttpPost"]
+    resources = [module.elasticsearch.domain_arn]
+  }
+}
+
+module "es_policy" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
+  version = "4.2.0"
+
+  description = "Allow all actions on ElasticSearch"
+  policy      = data.aws_iam_policy_document.datahub_policy.json
+  name        = "${local.name}-elastic-policy"
+
+  tags = local.tags
+
+}
+
+resource "aws_iam_role_policy_attachment" "datahub_role_attachement" {
+  role       = module.iam_role_assumed_k8s.iam_role_name
+  policy_arn = module.es_policy.arn
 }
 
 
@@ -139,7 +164,5 @@ module "elasticsearch" {
   warm_count                     = 0
   ebs_volume_size                = 10
   ebs_volume_type                = "gp2"
-  iam_actions                    = ["es:ESHttpGet", "es:ESHttpPut", "es:ESHttpPost"]
-  iam_role_arns                  = [module.iam_role_assumed_k8s.iam_role_arn]
   create_iam_service_linked_role = false
 }
