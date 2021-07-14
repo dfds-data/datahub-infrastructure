@@ -19,7 +19,7 @@ module "iam_role_assumed_k8s" {
   trusted_role_actions = [
     "sts:AssumeRole"
   ]
-  role_name         = "${local.name}-assumed-k8s"
+  role_name         = "${local.name}-assumed-kiam"
   tags              = local.tags
   create_role       = true
   role_requires_mfa = false
