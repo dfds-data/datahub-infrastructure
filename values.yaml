@@ -62,9 +62,13 @@ datahubUpgrade:
 
 global:
   datahub_analytics_enabled: false
-  graph_service_impl: elasticsearch
-  datahub_standalone_consumers_enabled: false
+  datahub:
+    appVersion: "1.0"
+    gms:
+      port: "8080"
 
+#######
+  graph_service_impl: elasticsearch
   elasticsearch:
     host: "elasticsearch-master"
     port: "9200"
@@ -77,6 +81,7 @@ global:
     schemaregistry:
       url: "http://prerequisites-cp-schema-registry:8081"
 
+  datahub_standalone_consumers_enabled: false
   neo4j:
     host: "prerequisites-neo4j-community:7474"
     uri: "bolt://prerequisites-neo4j-community"
@@ -97,12 +102,6 @@ global:
         secretRef: mysql-secrets
         secretKey: mysql-root-password
 
-  datahub:
-    gms:
-      port: "8080"
-    mae_consumer:
-      port: "9091"
-    appVersion: "1.0"
 #  hostAliases:
 #    - ip: "192.168.0.104"
 #      hostnames:
