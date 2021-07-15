@@ -97,12 +97,12 @@ module "db" {
   identifier = local.name
 
   create_db_option_group    = false
-  create_db_parameter_group = true
+  create_db_parameter_group = false
 
   # All available versions: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts
-  engine                      = "postgres"
-  engine_version              = "13"
-  family                      = "postgres13" # DB parameter group
+  engine                      = "mysql"
+  engine_version              = "8.0"
+  family                      = "mysql8.0" # DB parameter group
   instance_class              = "db.t3.micro"
   allow_major_version_upgrade = true
 
@@ -124,13 +124,6 @@ module "db" {
   backup_window      = "03:00-06:00"
 
   backup_retention_period = 10
-
-  parameters = [
-    {
-      name  = "rds.force_ssl"
-      value = 1
-    }
-  ]
 
   subnet_ids = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
   tags       = local.tags
