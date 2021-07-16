@@ -1,0 +1,94 @@
+# Values to start up datahub after starting up the datahub-prerequisites chart with "prerequisites" release name
+# Copy this chart and change configuration as needed.
+
+datahub-frontend:
+  enabled: true
+  image:
+    repository: linkedin/datahub-frontend-react
+    tag: "v0.8.6"
+
+datahub-gms:
+  enabled: true
+  image:
+    repository: linkedin/datahub-gms
+    tag: "v0.8.6"
+
+datahub-mae-consumer:
+  enabled: true
+  image:
+    repository: linkedin/datahub-mae-consumer
+    tag: "v0.8.6"
+
+datahub-mce-consumer:
+  enabled: true
+  image:
+    repository: linkedin/datahub-mce-consumer
+    tag: "v0.8.6"
+
+datahub-ingestion-cron:
+  enabled: false
+  image:
+    repository: linkedin/datahub-ingestion
+    tag: "v0.8.6"
+
+elasticsearchSetupJob:
+  enabled: true
+  image:
+    repository: linkedin/datahub-elasticsearch-setup
+    tag: "v0.8.6"
+
+kafkaSetupJob:
+  enabled: false
+  image:
+    repository: linkedin/datahub-kafka-setup
+    tag: "v0.8.6"
+
+mysqlSetupJob:
+  enabled: true
+  image:
+    repository: acryldata/datahub-mysql-setup
+    tag: "v0.8.6"
+
+datahubUpgrade:
+  enabled: true
+  image:
+    repository: acryldata/datahub-upgrade
+    tag: "v0.8.6"
+  noCodeDataMigration:
+    sqlDbType: "MYSQL"
+
+global:
+  datahub_analytics_enabled: false
+  datahub:
+    appVersion: "1.0"
+    gms:
+      port: "8080"
+  elasticsearch:
+    host: "elasticsearch-master" # Change
+    port: "9200"
+  kafka:
+    bootstrap:
+      server: "prerequisites-broker:9092" # Change
+    zookeeper:
+      server: "prerequisites-zookeeper:2181" # Change
+    schemaregistry:
+      url: "http://prerequisites-cp-schema-registry:8081" # Change
+  sql:
+    datasource:
+      driver: "com.mysql.jdbc.Driver"
+      host: "prerequisites-mysql:3306" # Change
+      hostForMysqlClient: "prerequisites-mysql" # Change
+      url: "jdbc:mysql://prerequisites-mysql:3306/datahub?verofyServerCertificate=false\u0026useSSL=true" # Change
+      username: "root" # Change
+      password:
+        secretRef: "mysql-secrets" # Change
+        secretKey: "mysql-password" # Change
+  graph_service_impl: "elasticsearch"
+  springKafkaConfigurationOverrides: "hmm" # Change (probably where to put creds)
+  elasticsearch:
+    useSSL: true
+    auth:
+      username: "" # Change
+      password:
+        secretRef: "" # Change (or does it work with IAM role?)
+        secretKey: "" # Change (or does it work with IAM role?)
