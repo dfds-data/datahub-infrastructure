@@ -64,31 +64,33 @@ global:
     gms:
       port: "8080"
   elasticsearch:
-    host: "elasticsearch-master" # Change
+    host: "host" # Change
     port: "9200"
+    # useSSL: true
+    # auth:
+    #   username: "" # Change
+    #   password:
+    #     secretRef: "" # Change (or does it work with IAM role?)
+    #     secretKey: "" # Change (or does it work with IAM role?)
   kafka:
     bootstrap:
-      server: "prerequisites-broker:9092" # Change
+      server: "k8shost:9092" # Change
     zookeeper:
-      server: "prerequisites-zookeeper:2181" # Change
+      server: "prerequisites-zookeeper:2181" # Change (is it needed???) No, it's only needed for "kafka setup" which is not enabled
     schemaregistry:
-      url: "http://prerequisites-cp-schema-registry:8081" # Change
+      url: "http://prerequisites-cp-schema-registry:8081" # Change (when we have it)
   sql:
     datasource:
       driver: "com.mysql.jdbc.Driver"
-      host: "prerequisites-mysql:3306" # Change
-      hostForMysqlClient: "prerequisites-mysql" # Change
-      url: "jdbc:mysql://prerequisites-mysql:3306/datahub?verofyServerCertificate=false\u0026useSSL=true" # Change
+      host: "host:port" # Change
+      hostForMysqlClient: "host" # Change
+      url: "jdbc:mysql://host/datahub?verifyServerCertificate=false\u0026useSSL=true" # Change
       username: "root" # Change
       password:
         secretRef: "mysql-secrets" # Change
         secretKey: "mysql-password" # Change
   graph_service_impl: "elasticsearch"
-  springKafkaConfigurationOverrides: "hmm" # Change (probably where to put creds)
-  elasticsearch:
-    useSSL: true
-    auth:
-      username: "" # Change
-      password:
-        secretRef: "" # Change (or does it work with IAM role?)
-        secretKey: "" # Change (or does it work with IAM role?)
+  springKafkaConfigurationOverrides: {} # Change (probably where to put creds)
+
+  ### SUBCHARTS VALUES
+  
