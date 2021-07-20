@@ -10,47 +10,6 @@ locals {
   }
 }
 
-// IAM role for k8s pods to assume, which gives access to resources needed
-module "iam_role_assumed_k8s" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
-  version = "4.2.0"
-
-  trusted_role_arns = ["arn:aws:iam::${var.kubernetes_account_number}:role/eks-hellman-kiam-server"]
-  trusted_role_actions = [
-    "sts:AssumeRole"
-  ]
-  role_name         = "${local.name}-assumed-kiam"
-  tags              = local.tags
-  create_role       = true
-  role_requires_mfa = false
-}
-
-data "aws_iam_policy_document" "datahub_policy" {
-  statement {
-    sid       = "FullApiAccess"
-    actions   = ["es:ESHttpGet", "es:ESHttpPut", "es:ESHttpPost"]
-    resources = [module.elasticsearch.domain_arn]
-  }
-}
-
-module "es_policy" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
-  version = "4.2.0"
-
-  description = "Allow all actions on ElasticSearch"
-  policy      = data.aws_iam_policy_document.datahub_policy.json
-  name        = "${local.name}-elastic-policy"
-
-  tags = local.tags
-
-}
-
-resource "aws_iam_role_policy_attachment" "datahub_role_attachement" {
-  role       = module.iam_role_assumed_k8s.iam_role_name
-  policy_arn = module.es_policy.arn
-}
-
-
 // Networking
 
 resource "aws_default_vpc" "default" {
@@ -79,11 +38,12 @@ module "security_group" {
   name        = "${local.name}-database-security-group"
   description = "${local.name} backend security group"
   vpc_id      = aws_default_vpc.default.id
+  
 
   # ingress
   ingress_with_cidr_blocks = [
     {
-      rule        = "postgresql-tcp"
+      rule        = "mysql-tcp"
       cidr_blocks = "0.0.0.0/0"
     },
   ]
@@ -115,7 +75,7 @@ module "db" {
   username               = "superuser"
   create_random_password = true
   random_password_length = 32
-  port                   = 5432
+  port                   = 3306
   publicly_accessible    = true
 
   vpc_security_group_ids = [module.security_group.security_group_id]
@@ -143,21 +103,57 @@ resource "aws_ssm_parameter" "database_password" {
 }
 
 // Elastic
+resource "aws_elasticsearch_domain" "datahub-es" {
+  domain_name = "datahub00es"
+  tags = local.tags
+  elasticsearch_version = "7.10"
+  domain_endpoint_options {
+    enforce_https = true
+    tls_security_policy = "Policy-Min-TLS-1-0-2019-07"
+  }
+  node_to_node_encryption {
+    enabled = true
+  }
 
-module "elasticsearch" {
-  source  = "cloudposse/elasticsearch/aws"
-  version = "0.33.0"
+  access_policies = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "es:*",
+      "Resource": "*"
+    }
+  ]
+}
+POLICY  
 
-  namespace                      = "dfds"
-  name                           = local.name
-  vpc_id                         = aws_default_vpc.default.id
-  subnet_ids                     = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id]
-  tags                           = local.tags
-  elasticsearch_version          = "7.10"
-  instance_type                  = "t3.small.elasticsearch"
-  instance_count                 = 2
-  warm_count                     = 0
-  ebs_volume_size                = 10
-  ebs_volume_type                = "gp2"
-  create_iam_service_linked_role = false
+  encrypt_at_rest {
+    enabled = true
+  }
+
+  cluster_config {
+     instance_type = "t3.small.elasticsearch"
+     instance_count = 2
+     warm_enabled = false
+  }
+
+  ebs_options {
+    ebs_enabled = true
+    volume_type = "gp2"
+    volume_size = 10
+  }
+
+  advanced_security_options {
+    enabled = true
+    internal_user_database_enabled = true
+    master_user_options {
+      master_user_name = "${var.es_username}"
+      master_user_password = "${var.es_password}"
+    }
+  }
+
 }
