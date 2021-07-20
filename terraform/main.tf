@@ -103,8 +103,17 @@ resource "aws_ssm_parameter" "database_password" {
 }
 
 // Elastic
+
+resource "random_string" "es-unique-identifier" {
+  length = 5
+  special = false
+  lower = true
+  upper = false
+  number = true
+}
+
 resource "aws_elasticsearch_domain" "datahub-es" {
-  domain_name = "datahub00es"
+  domain_name = "datahub-${random_string.es-unique-identifier.result}"
   tags = local.tags
   elasticsearch_version = "7.10"
   domain_endpoint_options {
