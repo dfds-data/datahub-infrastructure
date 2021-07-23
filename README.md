@@ -10,3 +10,9 @@ helm repo add datahub https://helm.datahubproject.io/
 
 helm install -n <namespace> datahub datahub/datahub --values values.yaml
 ```
+
+Uninstall the app
+
+```
+helm uninstall -n <namespace> datahub
+```

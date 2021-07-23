@@ -1,35 +1,110 @@
-# Values to start up datahub after starting up the datahub-prerequisites chart with "prerequisites" release name
-# Copy this chart and change configuration as needed.
+# Values to deploy datahub with the helm chart
+# See: https://github.com/acryldata/datahub-helm
+
+global:
+  datahub_analytics_enabled: false
+  datahub:
+    appVersion: "1.0"
+    gms:
+      port: "8080"
+  elasticsearch:
+    # Secret
+    host: ""
+    port: "443"
+    useSSL: true
+    auth:
+      # Secret
+      username: ""
+      password:
+        secretRef: "datahub"
+        secretKey: "es-password"
+  kafka:
+    bootstrap:
+      # Secret
+      server: ""
+    schemaregistry:
+      # Secret
+      url: ""
+  sql:
+    datasource:
+      # Secret
+      host: ""
+      # Secret
+      hostForMysqlClient: ""
+      # Secret
+      url: ""
+      # Secret
+      username: ""
+      password:
+        secretRef: "datahub"
+        secretKey: "mysql-password"
+  graph_service_impl: "elasticsearch"
+  springKafkaConfigurationOverrides:
+    security.protocol: SASL_SSL
+    kafkastore.security.protocol: SASL_SSL
+    # Secret
+    sasl.jaas.config: ""
+    
+    # Probably not needed
+    sasl.mechanism: PLAIN
+    sasl.username: ""
+    sasl.password: ""
 
 datahub-frontend:
   enabled: true
   image:
     repository: linkedin/datahub-frontend-react
     tag: "v0.8.6"
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: "1"
+      memory: 2Gi
+  ingress:
+    enabled: false
+    hosts:
+      # Secret
+      - host: ""
+        paths:
+          - "/"
 
 datahub-gms:
   enabled: true
   image:
     repository: linkedin/datahub-gms
     tag: "v0.8.6"
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: "1"
+      memory: 2Gi
+  extraEnvs:
+    # All Secret
+    # Some of these are not needed, not clear which
+    # See https://datahubproject.io/docs/how/kafka-config
+    - name: METADATA_CHANGE_EVENT_NAME
+      value: ""
+    - name: METADATA_AUDIT_EVENT_NAME
+      value: ""
+    - name: FAILED_METADATA_CHANGE_EVENT_NAME
+      value: ""
+    - name: KAFKA_MCE_TOPIC_NAME
+      value: ""
+    - name: KAFKA_FMCE_TOPIC_NAME
+      value: ""
+    - name: KAFKA_TOPIC_NAME
+      value: ""
 
-datahub-mae-consumer:
-  enabled: true
-  image:
-    repository: linkedin/datahub-mae-consumer
-    tag: "v0.8.6"
-
-datahub-mce-consumer:
-  enabled: true
-  image:
-    repository: linkedin/datahub-mce-consumer
-    tag: "v0.8.6"
+    # TODO: GMS seems to ignore this one?
+    - name: KAFKA_CONSUMER_GROUP_ID
+      value: ""
 
 datahub-ingestion-cron:
   enabled: false
-  image:
-    repository: linkedin/datahub-ingestion
-    tag: "v0.8.6"
 
 elasticsearchSetupJob:
   enabled: true
@@ -39,9 +114,6 @@ elasticsearchSetupJob:
 
 kafkaSetupJob:
   enabled: false
-  image:
-    repository: linkedin/datahub-kafka-setup
-    tag: "v0.8.6"
 
 mysqlSetupJob:
   enabled: true
@@ -50,47 +122,9 @@ mysqlSetupJob:
     tag: "v0.8.6"
 
 datahubUpgrade:
-  enabled: true
+  enabled: false
   image:
     repository: acryldata/datahub-upgrade
     tag: "v0.8.6"
   noCodeDataMigration:
     sqlDbType: "MYSQL"
-
-global:
-  datahub_analytics_enabled: false
-  datahub:
-    appVersion: "1.0"
-    gms:
-      port: "8080"
-  elasticsearch:
-    host: "host" # Change
-    port: "9200"
-    # useSSL: true
-    # auth:
-    #   username: "" # Change
-    #   password:
-    #     secretRef: "" # Change (or does it work with IAM role?)
-    #     secretKey: "" # Change (or does it work with IAM role?)
-  kafka:
-    bootstrap:
-      server: "k8shost:9092" # Change
-    zookeeper:
-      server: "prerequisites-zookeeper:2181" # Change (is it needed???) No, it's only needed for "kafka setup" which is not enabled
-    schemaregistry:
-      url: "http://prerequisites-cp-schema-registry:8081" # Change (when we have it)
-  sql:
-    datasource:
-      driver: "com.mysql.jdbc.Driver"
-      host: "host:port" # Change
-      hostForMysqlClient: "host" # Change
-      url: "jdbc:mysql://host/datahub?verifyServerCertificate=false\u0026useSSL=true" # Change
-      username: "root" # Change
-      password:
-        secretRef: "mysql-secrets" # Change
-        secretKey: "mysql-password" # Change
-  graph_service_impl: "elasticsearch"
-  springKafkaConfigurationOverrides: {} # Change (probably where to put creds)
-
-  ### SUBCHARTS VALUES
-  
