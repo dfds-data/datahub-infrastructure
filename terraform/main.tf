@@ -38,7 +38,7 @@ module "security_group" {
   name        = "${local.name}-database-security-group"
   description = "${local.name} backend security group"
   vpc_id      = aws_default_vpc.default.id
-  
+
 
   # ingress
   ingress_with_cidr_blocks = [
@@ -105,19 +105,24 @@ resource "aws_ssm_parameter" "database_password" {
 // Elastic
 
 resource "random_string" "es-unique-identifier" {
-  length = 5
+  length  = 5
   special = false
-  lower = true
-  upper = false
-  number = true
+  lower   = true
+  upper   = false
+  number  = true
+}
+
+module "es-password" {
+  source   = "./modules/password"
+  ssm_path = "/${local.name}/elasticsearch/password"
 }
 
 resource "aws_elasticsearch_domain" "datahub-es" {
-  domain_name = "datahub-${random_string.es-unique-identifier.result}"
-  tags = local.tags
+  domain_name           = "datahub-${random_string.es-unique-identifier.result}"
+  tags                  = local.tags
   elasticsearch_version = "7.10"
   domain_endpoint_options {
-    enforce_https = true
+    enforce_https       = true
     tls_security_policy = "Policy-Min-TLS-1-0-2019-07"
   }
   node_to_node_encryption {
@@ -145,9 +150,9 @@ POLICY
   }
 
   cluster_config {
-     instance_type = "t3.small.elasticsearch"
-     instance_count = 2
-     warm_enabled = false
+    instance_type  = "t3.small.elasticsearch"
+    instance_count = 2
+    warm_enabled   = false
   }
 
   ebs_options {
@@ -157,11 +162,11 @@ POLICY
   }
 
   advanced_security_options {
-    enabled = true
+    enabled                        = true
     internal_user_database_enabled = true
     master_user_options {
-      master_user_name = "${var.es_username}"
-      master_user_password = "${var.es_password}"
+      master_user_name     = "superuser"
+      master_user_password = module.es-password.password
     }
   }
 
