@@ -1,0 +1,115 @@
+# Values to deploy datahub with the helm chart
+# See: https://github.com/acryldata/datahub-helm
+
+global:
+  graph_service_impl: "elasticsearch"
+  datahub_analytics_enabled: false
+  elasticsearch:
+    # Secret
+    host: ""
+    port: "443"
+    useSSL: true
+    auth:
+      # Secret
+      username: ""
+      password:
+        secretRef: "datahub"
+        secretKey: "es-password"
+  kafka:
+    bootstrap:
+      # Secret
+      server: ""
+    schemaregistry:
+      # Secret
+      url: ""
+  sql:
+    datasource:
+      # Secret
+      host: ""
+      # Secret
+      hostForMysqlClient: ""
+      # Secret
+      url: "jdbc:mysql:///datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8&enabledTLSProtocols=TLSv1.2"
+      # Secret
+      username: ""
+      password:
+        secretRef: "datahub"
+        secretKey: "mysql-password"
+  springKafkaConfigurationOverrides:
+    security.protocol: SASL_SSL
+    kafkastore.security.protocol: SASL_SSL
+    sasl.mechanism: PLAIN
+    sasl.username: ""
+    sasl.password: ""
+    # Secret
+    sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="" password="";
+
+datahub-frontend:
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: "1"
+      memory: 2Gi
+  ingress:
+    enabled: true
+    hosts:
+      - host: ""
+        paths:
+          - "/"
+  extraEnvs:
+    - name: AUTH_OIDC_ENABLED
+      value: "true"
+    - name: AUTH_OIDC_CLIENT_ID
+      value: ""
+    - name: AUTH_OIDC_CLIENT_SECRET
+      value: ""
+    - name: AUTH_OIDC_DISCOVERY_URI
+      value: ""
+    - name: AUTH_OIDC_BASE_URL
+      value: ""
+
+datahub-gms:
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: "1"
+      memory: 2Gi
+  extraEnvs:
+    # All Secret
+    # Some of these are not needed, not clear which
+    # See https://datahubproject.io/docs/how/kafka-config
+    - name: METADATA_CHANGE_EVENT_NAME
+      value: ""
+    - name: METADATA_AUDIT_EVENT_NAME
+      value: ""
+    - name: FAILED_METADATA_CHANGE_EVENT_NAME
+      value: ""
+    - name: KAFKA_MCE_TOPIC_NAME
+      value: ""
+    - name: KAFKA_FMCE_TOPIC_NAME
+      value: ""
+    - name: KAFKA_TOPIC_NAME
+      value: ""
+    # New topics to replace all others, so the above can be deprecated in later versions
+    # See https://datahubproject.io/docs/advanced/mcp-mcl/#topics
+    - name: METADATA_CHANGE_LOG_VERSIONED_TOPIC_NAME
+      value: ""
+    - name: METADATA_CHANGE_LOG_TIMESERIES_TOPIC_NAME
+      value: ""
+    - name: METADATA_CHANGE_PROPOSAL_TOPIC_NAME
+      value: ""
+    - name: FAILED_METADATA_CHANGE_PROPOSAL_TOPIC_NAME
+      value: ""
+
+    # Consumer group IDs for consumers (must be different)
+    - name: METADATA_AUDIT_EVENT_KAFKA_CONSUMER_GROUP_ID
+      value: ""
+    - name: METADATA_CHANGE_EVENT_KAFKA_CONSUMER_GROUP_ID
+      value: ""
+
+kafkaSetupJob:
+  enabled: false
