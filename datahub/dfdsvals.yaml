@@ -39,10 +39,14 @@ global:
     security.protocol: SASL_SSL
     kafkastore.security.protocol: SASL_SSL
     sasl.mechanism: PLAIN
-    sasl.username: "$(SASL_USERNAME)"
-    sasl.password: "$(SASL_PASSWORD)"
+    sasl.username: "$(KAFKA_SASL_USERNAME)"
+    sasl.password:
+      secretRef: "datahub"
+      secretKey: "sasl-password"
     # Secret
-    sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="$(SASL_USERNAME)" password="$(SASL_PASSWORD)";
+    sasl.jaas.config:
+      secretRef: "datahub"
+      secretKey: "sasl-jaas-config"
 
 datahub-frontend:
   resources:
@@ -64,7 +68,9 @@ datahub-frontend:
     - name: AUTH_OIDC_CLIENT_ID
       value: "$(AUTH_OIDC_CLIENT_ID)"
     - name: AUTH_OIDC_CLIENT_SECRET
-      value: "$(AUTH_OIDC_CLIENT_SECRET)"
+      value:
+        secretRef: "datahub"
+        secretKey: "auth-oidc-client-secret"
     - name: AUTH_OIDC_DISCOVERY_URI
       value: "$(AUTH_OIDC_DISCOVERY_URI)"
     - name: AUTH_OIDC_BASE_URL
