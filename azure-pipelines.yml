@@ -30,14 +30,6 @@ stages:
           vmImage: $(vmImage)
 
         steps:
-          - task: CmdLine@2
-            inputs:
-              script: |
-                echo Write your commands here
-
-                echo Hello world
-
-          # Create Terraform Plan
           - task: AWSShellScript@1
             displayName: Create TF plan
             inputs:
@@ -112,30 +104,6 @@ stages:
                     SAML2AWS_USERNAME: $(SAML2AWS_USERNAME)
                     SAML2AWS_ROLE: $(SAML2AWS_ROLE)
 
-                # Download manifest from current artifacts pipeline
-                - download: current
-                  artifact: manifests
-                  displayName: "Download Artifact: manifests"
-
-                # Replace token values in yaml files with pipeline variables
-                - task: qetza.replacetokens.replacetokens-task.replacetokens@3
-                  displayName: "Replace tokens in yaml files"
-                  inputs:
-                    rootDirectory: "$(Pipeline.Workspace)/manifests/"
-                    targetFiles: "*.yaml"
-                    tokenPrefix: "$("
-                    tokenSuffix: ")"
-
-                # Apply Kubernetes manifests
-                - task: Kubernetes@1
-                  displayName: "Apply manifests"
-                  inputs:
-                    connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
-                    namespace: $(K8S_NAMESPACE)
-                    command: apply
-                    arguments: "-f $(Pipeline.Workspace)/manifests/"
-
                 # Terraform
                 # Download Terraform folder from current artifacts pipeline
                 - download: current
@@ -162,13 +130,37 @@ stages:
                   inputs:
                     jsonFile: "$(Pipeline.Workspace)/terraform/output.json"
 
+                # Download manifest from current artifacts pipeline
+                - download: current
+                  artifact: manifests
+                  displayName: "Download Artifact: manifests"
+
+                # Replace token values in yaml files with pipeline variables
+                - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+                  displayName: "Replace tokens in yaml files"
+                  inputs:
+                    rootDirectory: "$(Pipeline.Workspace)/manifests/"
+                    targetFiles: "*.yaml"
+                    tokenPrefix: "$("
+                    tokenSuffix: ")"
+
+                # Apply Kubernetes manifests
+                - task: Kubernetes@1
+                  displayName: "Apply manifests"
+                  inputs:
+                    connectionType: Kubernetes Service Connection
+                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
+                    namespace: $(K8S_NAMESPACE)
+                    command: apply
+                    arguments: "-f $(Pipeline.Workspace)/manifests/"
+
+                # DataHub
                 # Install the Helm binary to the host machine
                 - task: HelmInstaller@1
                   displayName: "Helm client installer"
                   inputs:
                     helmVersionToInstall: 3.2.4
 
-                # DataHub
                 # Download DataHub folder from current artifacts pipeline
                 - download: current
                   artifact: datahub
