@@ -21,36 +21,53 @@ variables:
   kubernetes-namespace:
 
 stages:
+  # Continuous Integration steps
   - stage: CI
-    displayName: CI
+    displayName: "Continuous Integration"
     jobs:
-      - job: Prerequisites
-        displayName: Prerequisites
+      # Build jobs
+      - job: Build
         pool:
           vmImage: $(vmImage)
           steps:
+            # Create Terraform Plan
             - task: AWSShellScript@1
               displayName: Create TF plan
               inputs:
-                awsCredentials: ""
+                awsCredentials: "$(AwsCredentials)"
                 regionName: "eu-central-1"
                 scriptType: "inline"
                 inlineScript: |
                   terraform init
                   terraform plan --out plan.tfplan
-                  terraform apply -auto-approve plan.tfplan
-                  terraform output -json > output.json
                 disableAutoCwd: true
                 workingDirectory: "$(System.DefaultWorkingDirectory)/terraform"
                 failOnStandardError: true
-            - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
-              inputs:
-                jsonFile: "$(System.DefaultWorkingDirectory)/output/output.json"
+
+            # Upload Kubernetes manifests to current artifact Pipeline from folder /k8s
+            - publish: $(System.DefaultWorkingDirectory)/k8s
+              artifact: manifests
+              displayName: "Publish Artifact: manifests"
+
+            # Upload Terraform plan to current artifact Pipeline from folder /terraform
+            - publish: $(System.DefaultWorkingDirectory)/terraform
+              artifact: terraform
+              displayName: "Publish Artifact: terraform"
+
+            # Upload DataHub Helm Chart Values Files to current artifact Pipeline from folder /datahub
+            - publish: $(System.DefaultWorkingDirectory)/datahub
+              artifact: datahub
+              displayName: "Publish Artifact: datahub"
+
+  # Continuous Deployment steps
+  - stage: CD
+    displayName: "Continuous Deployment"
+    jobs:
       - deployment: K8s
-        displayName: Deploy to Kubernetes
+        displayName: "Deploy to Kubernetes"
         variables:
           AWS_PROFILE: "saml"
-        environment: ""
+        environment: "hellman"
 
         strategy:
           runOnce:
@@ -84,15 +101,17 @@ stages:
                     SAML2AWS_PASSWORD: $(SAML2AWS_PASSWORD)
                     SAML2AWS_USERNAME: $(SAML2AWS_USERNAME)
                     SAML2AWS_ROLE: $(SAML2AWS_ROLE)
-                - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
-                  inputs:
-                  jsonFile:
-                    "$(System.DefaultWorkingDirectory)/output/output.json"
-                    # Replace token values in yaml files with pipeline variables
+
+                # Download manifest from current artifacts pipeline
+                - download: current
+                  artifact: manifests
+                  displayName: "Download Artifact: manifests"
+
+                # Replace token values in yaml files with pipeline variables
                 - task: qetza.replacetokens.replacetokens-task.replacetokens@3
                   displayName: "Replace tokens in yaml files"
                   inputs:
-                    rootDirectory: "$(System.DefaultWorkingDirectory)/k8s/"
+                    rootDirectory: "$(Pipeline.Workspace)/manifests/"
                     targetFiles: "*.yaml"
                     tokenPrefix: "$("
                     tokenSuffix: ")"
@@ -106,35 +125,73 @@ stages:
                     namespace: $(kubernetes-namespace)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
-      - job: Helm
-        displayName: "Deploy to Kubernetes"
-        pool:
-          vmImage: $(vmImage)
 
-        steps:
-          # Install the Helm binary to the host machine
-          - task: HelmInstaller@1
-            displayName: "Helm client installer"
-            inputs:
-              helmVersionToInstall: 3.2.4
+                # Terraform
+                # Download Terraform folder from current artifacts pipeline
+                - download: current
+                  artifact: terraform
+                  displayName: "Download Artifact: terraform"
 
-          - task: HelmDeploy@0
-            inputs:
-              connectionType: "Kubernetes Service Connection"
-              kubernetesServiceConnection: $(k8s-service-connection)
-              namespace: $(kubernetes-namespace)
-              command: "repo"
-              arguments: "add datahub https://helm.datahubproject.io/"
+                # Apply Terraform plan
+                - task: AWSShellScript@1
+                  displayName: Apply TF plan
+                  inputs:
+                    awsCredentials: "$(AwsCredentials)"
+                    regionName: "eu-central-1"
+                    scriptType: "inline"
+                    inlineScript: |
+                      terraform init
+                      terraform apply -auto-approve plan.tfplan
+                      terraform output -json > output.json
+                    disableAutoCwd: true
+                    workingDirectory: "$(Pipeline.Workspace)/terraform"
+                    failOnStandardError: true
 
-          - task: HelmDeploy@0
-            inputs:
-              connectionType: "Kubernetes Service Connection"
-              kubernetesServiceConnection: $(k8s-service-connection)
-              namespace: $(kubernetes-namespace)
-              command: "upgrade"
-              chartType: "Name"
-              chartName: "datahub/datahub"
-              chartVersion: "0.2.16"
-              releaseName: "dfds-datahub"
-              install: false
-              arguments: "-i -f values.yaml -f values-compass.yaml"
+                # Terraform output to variables
+                - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
+                  inputs:
+                    jsonFile: "$(Pipeline.Workspace)/terraform/output.json"
+
+                # Install the Helm binary to the host machine
+                - task: HelmInstaller@1
+                  displayName: "Helm client installer"
+                  inputs:
+                    helmVersionToInstall: 3.2.4
+
+                # DataHub
+                # Download DataHub folder from current artifacts pipeline
+                - download: current
+                  artifact: datahub
+                  displayName: "Download Artifact: datahub"
+
+                # Replace token values in yaml files with pipeline variables
+                - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+                  displayName: "Replace tokens in yaml files"
+                  inputs:
+                    rootDirectory: "$(Pipeline.Workspace)/datahub/"
+                    targetFiles: "*.yaml"
+                    tokenPrefix: "$("
+                    tokenSuffix: ")"
+
+                # Add DataHub Helm Chart Repository
+                - task: HelmDeploy@0
+                  inputs:
+                    connectionType: "Kubernetes Service Connection"
+                    kubernetesServiceConnection: $(k8s-service-connection)
+                    namespace: $(kubernetes-namespace)
+                    command: "repo"
+                    arguments: "add datahub https://helm.datahubproject.io/"
+
+                # Upgrade DataHub Helm Chart installation with DFDS Helm Chart Values File
+                - task: HelmDeploy@0
+                  inputs:
+                    connectionType: "Kubernetes Service Connection"
+                    kubernetesServiceConnection: $(k8s-service-connection)
+                    namespace: $(kubernetes-namespace)
+                    command: "upgrade"
+                    chartType: "Name"
+                    chartName: "datahub/datahub"
+                    chartVersion: "0.2.16"
+                    releaseName: "dfds-datahub"
+                    install: false
+                    arguments: "-i -f $(Pipeline.Workspace)/datahub/values.yaml -f $(Pipeline.Workspace)/datahub/dfdsvals.yaml"

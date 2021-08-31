@@ -6,32 +6,32 @@ global:
   datahub_analytics_enabled: false
   elasticsearch:
     # Secret
-    host: ""
+    host: "$(es_host.value)"
     port: "443"
     useSSL: true
     auth:
       # Secret
-      username: ""
+      username: "superuser"
       password:
         secretRef: "datahub"
         secretKey: "es-password"
   kafka:
     bootstrap:
       # Secret
-      server: ""
+      server: "$(KAFKA_BOOTSTRAP_SERVER)"
     schemaregistry:
       # Secret
-      url: ""
+      url: "$(KAFKA_SCHEMAREGISTRY_URL)"
   sql:
     datasource:
       # Secret
-      host: ""
+      host: "$(db_host.value):$(db_port.value)"
       # Secret
-      hostForMysqlClient: ""
+      hostForMysqlClient: "$(db_host.value)"
       # Secret
-      url: "jdbc:mysql:///datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8&enabledTLSProtocols=TLSv1.2"
+      url: "jdbc:mysql://$(db_host.value):$(db_port.value)/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8&enabledTLSProtocols=TLSv1.2"
       # Secret
-      username: ""
+      username: "superuser"
       password:
         secretRef: "datahub"
         secretKey: "mysql-password"
@@ -39,10 +39,10 @@ global:
     security.protocol: SASL_SSL
     kafkastore.security.protocol: SASL_SSL
     sasl.mechanism: PLAIN
-    sasl.username: ""
-    sasl.password: ""
+    sasl.username: "$(SASL_USERNAME)"
+    sasl.password: "$(SASL_PASSWORD)"
     # Secret
-    sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="" password="";
+    sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="$(SASL_USERNAME)" password="$(SASL_PASSWORD)";
 
 datahub-frontend:
   resources:
@@ -55,20 +55,20 @@ datahub-frontend:
   ingress:
     enabled: true
     hosts:
-      - host: ""
+      - host: "$(HOST)"
         paths:
           - "/"
   extraEnvs:
     - name: AUTH_OIDC_ENABLED
       value: "true"
     - name: AUTH_OIDC_CLIENT_ID
-      value: ""
+      value: "$(AUTH_OIDC_CLIENT_ID)"
     - name: AUTH_OIDC_CLIENT_SECRET
-      value: ""
+      value: "$(AUTH_OIDC_CLIENT_SECRET)"
     - name: AUTH_OIDC_DISCOVERY_URI
-      value: ""
+      value: "$(AUTH_OIDC_DISCOVERY_URI)"
     - name: AUTH_OIDC_BASE_URL
-      value: ""
+      value: "https://$(HOST)"
 
 datahub-gms:
   resources:
@@ -83,33 +83,33 @@ datahub-gms:
     # Some of these are not needed, not clear which
     # See https://datahubproject.io/docs/how/kafka-config
     - name: METADATA_CHANGE_EVENT_NAME
-      value: ""
+      value: "$(METADATA_CHANGE_EVENT_NAME)"
     - name: METADATA_AUDIT_EVENT_NAME
-      value: ""
+      value: "$(METADATA_AUDIT_EVENT_NAME)"
     - name: FAILED_METADATA_CHANGE_EVENT_NAME
-      value: ""
+      value: "$(FAILED_METADATA_CHANGE_EVENT_NAME)"
     - name: KAFKA_MCE_TOPIC_NAME
-      value: ""
+      value: "$(KAFKA_MCE_TOPIC_NAME)"
     - name: KAFKA_FMCE_TOPIC_NAME
-      value: ""
+      value: "$(KAFKA_FMCE_TOPIC_NAME)"
     - name: KAFKA_TOPIC_NAME
-      value: ""
+      value: "$(KAFKA_TOPIC_NAME)"
     # New topics to replace all others, so the above can be deprecated in later versions
     # See https://datahubproject.io/docs/advanced/mcp-mcl/#topics
     - name: METADATA_CHANGE_LOG_VERSIONED_TOPIC_NAME
-      value: ""
+      value: "$(METADATA_CHANGE_LOG_VERSIONED_TOPIC_NAME)"
     - name: METADATA_CHANGE_LOG_TIMESERIES_TOPIC_NAME
-      value: ""
+      value: "$(METADATA_CHANGE_LOG_TIMESERIES_TOPIC_NAME)"
     - name: METADATA_CHANGE_PROPOSAL_TOPIC_NAME
-      value: ""
+      value: "$(METADATA_CHANGE_PROPOSAL_TOPIC_NAME)"
     - name: FAILED_METADATA_CHANGE_PROPOSAL_TOPIC_NAME
-      value: ""
+      value: "$(FAILED_METADATA_CHANGE_PROPOSAL_TOPIC_NAME)"
 
     # Consumer group IDs for consumers (must be different)
     - name: METADATA_AUDIT_EVENT_KAFKA_CONSUMER_GROUP_ID
-      value: ""
+      value: "$(METADATA_AUDIT_EVENT_KAFKA_CONSUMER_GROUP_ID)"
     - name: METADATA_CHANGE_EVENT_KAFKA_CONSUMER_GROUP_ID
-      value: ""
+      value: "$(METADATA_CHANGE_EVENT_KAFKA_CONSUMER_GROUP_ID)"
 
 kafkaSetupJob:
   enabled: false
