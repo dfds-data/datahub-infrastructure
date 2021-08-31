@@ -17,8 +17,6 @@ pr: none
 # Global variables for the pipeline
 variables:
   vmImage: ubuntu-latest
-  k8s-service-connection:
-  kubernetes-namespace:
 
 stages:
   # Continuous Integration steps
@@ -34,7 +32,7 @@ stages:
             - task: AWSShellScript@1
               displayName: Create TF plan
               inputs:
-                awsCredentials: "$(AwsCredentials)"
+                awsCredentials: "$(AWS_SERVICECONNECTION)"
                 regionName: "eu-central-1"
                 scriptType: "inline"
                 inlineScript: |
@@ -121,8 +119,8 @@ stages:
                   displayName: "Apply manifests"
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: "$(k8s-service-connection)"
-                    namespace: $(kubernetes-namespace)
+                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
+                    namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
 
@@ -136,7 +134,7 @@ stages:
                 - task: AWSShellScript@1
                   displayName: Apply TF plan
                   inputs:
-                    awsCredentials: "$(AwsCredentials)"
+                    awsCredentials: "$(AWS_SERVICECONNECTION)"
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
@@ -177,8 +175,8 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: $(k8s-service-connection)
-                    namespace: $(kubernetes-namespace)
+                    kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
+                    namespace: $(K8S_NAMESPACE)
                     command: "repo"
                     arguments: "add datahub https://helm.datahubproject.io/"
 
@@ -186,8 +184,8 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: $(k8s-service-connection)
-                    namespace: $(kubernetes-namespace)
+                    kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
+                    namespace: $(K8S_NAMESPACE)
                     command: "upgrade"
                     chartType: "Name"
                     chartName: "datahub/datahub"
