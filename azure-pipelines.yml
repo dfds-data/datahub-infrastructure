@@ -17,6 +17,7 @@ pr: none
 # Global variables for the pipeline
 variables:
   vmImage: ubuntu-latest
+  terraformVersion: 0.14.3
 
 stages:
   # Continuous Integration steps
@@ -30,6 +31,10 @@ stages:
           vmImage: $(vmImage)
 
         steps:
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: $(terraformVersion)
+
           - task: AWSShellScript@1
             displayName: Create TF plan
             inputs:
@@ -105,6 +110,11 @@ stages:
                     SAML2AWS_ROLE: $(SAML2AWS_ROLE)
 
                 # Terraform
+                # Install Terraform
+                - task: TerraformInstaller@0
+                  inputs:
+                    terraformVersion: $(terraformVersion)
+
                 # Download Terraform folder from current artifacts pipeline
                 - download: current
                   artifact: terraform
