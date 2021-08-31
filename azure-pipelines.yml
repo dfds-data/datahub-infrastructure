@@ -22,40 +22,49 @@ stages:
   # Continuous Integration steps
   - stage: CI
     displayName: "Continuous Integration"
+
+    # Build jobs
     jobs:
-      # Build jobs
       - job: Build
         pool:
           vmImage: $(vmImage)
-          steps:
-            # Create Terraform Plan
-            - task: AWSShellScript@1
-              displayName: Create TF plan
-              inputs:
-                awsCredentials: "$(AWS_SERVICECONNECTION)"
-                regionName: "eu-central-1"
-                scriptType: "inline"
-                inlineScript: |
-                  terraform init
-                  terraform plan --out plan.tfplan
-                disableAutoCwd: true
-                workingDirectory: "$(System.DefaultWorkingDirectory)/terraform"
-                failOnStandardError: true
 
-            # Upload Kubernetes manifests to current artifact Pipeline from folder /k8s
-            - publish: $(System.DefaultWorkingDirectory)/k8s
-              artifact: manifests
-              displayName: "Publish Artifact: manifests"
+        steps:
+          - task: CmdLine@2
+            inputs:
+              script: |
+                echo Write your commands here
 
-            # Upload Terraform plan to current artifact Pipeline from folder /terraform
-            - publish: $(System.DefaultWorkingDirectory)/terraform
-              artifact: terraform
-              displayName: "Publish Artifact: terraform"
+                echo Hello world
 
-            # Upload DataHub Helm Chart Values Files to current artifact Pipeline from folder /datahub
-            - publish: $(System.DefaultWorkingDirectory)/datahub
-              artifact: datahub
-              displayName: "Publish Artifact: datahub"
+          # Create Terraform Plan
+          - task: AWSShellScript@1
+            displayName: Create TF plan
+            inputs:
+              awsCredentials: "$(AWS_SERVICECONNECTION)"
+              regionName: "eu-central-1"
+              scriptType: "inline"
+              inlineScript: |
+                terraform init
+                terraform plan --out plan.tfplan
+              disableAutoCwd: true
+              workingDirectory: "$(System.DefaultWorkingDirectory)/terraform"
+              failOnStandardError: true
+
+          # Upload Kubernetes manifests to current artifact Pipeline from folder /k8s
+          - publish: $(System.DefaultWorkingDirectory)/k8s
+            artifact: manifests
+            displayName: "Publish Artifact: manifests"
+
+          # Upload Terraform plan to current artifact Pipeline from folder /terraform
+          - publish: $(System.DefaultWorkingDirectory)/terraform
+            artifact: terraform
+            displayName: "Publish Artifact: terraform"
+
+          # Upload DataHub Helm Chart Values Files to current artifact Pipeline from folder /datahub
+          - publish: $(System.DefaultWorkingDirectory)/datahub
+            artifact: datahub
+            displayName: "Publish Artifact: datahub"
 
   # Continuous Deployment steps
   - stage: CD
