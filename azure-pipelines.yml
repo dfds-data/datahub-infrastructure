@@ -17,7 +17,7 @@ pr: none
 # Global variables for the pipeline
 variables:
   vmImage: ubuntu-latest
-  terraformVersion: 1.1.0
+  terraformVersion: 1.0.5
 
 stages:
   # Continuous Integration steps
