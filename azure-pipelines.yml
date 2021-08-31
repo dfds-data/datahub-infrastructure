@@ -60,6 +60,9 @@ stages:
   # Continuous Deployment steps
   - stage: CD
     displayName: "Continuous Deployment"
+    dependsOn: CI
+    # Run CD only if CI succeeds
+    condition: succeeded()
     jobs:
       - deployment: K8s
         displayName: "Deploy to Kubernetes"
