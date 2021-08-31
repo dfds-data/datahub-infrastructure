@@ -65,7 +65,7 @@ stages:
         displayName: "Deploy to Kubernetes"
         variables:
           AWS_PROFILE: "saml"
-        environment: "hellman"
+        environment: "Hellman"
 
         strategy:
           runOnce:
