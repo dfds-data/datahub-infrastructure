@@ -215,3 +215,4 @@ stages:
                     releaseName: "dfds-datahub"
                     install: false
                     arguments: "-i -f $(Pipeline.Workspace)/datahub/values.yaml -f $(Pipeline.Workspace)/datahub/dfdsvals.yaml"
+                    waitForExecution: false
