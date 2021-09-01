@@ -52,7 +52,7 @@ stages:
           # Delete folders, or files matching a pattern
           - task: DeleteFiles@1
             inputs:
-              Contents: $(System.DefaultWorkingDirectory)/terraform/.terraform*
+              Contents: /terraform/.terraform*
 
           # Upload Kubernetes manifests to current artifact Pipeline from folder /k8s
           - publish: $(System.DefaultWorkingDirectory)/k8s
