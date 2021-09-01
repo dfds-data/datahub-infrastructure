@@ -18,7 +18,7 @@ global:
   kafka:
     bootstrap:
       # Secret
-      server: "$(KAFKA_BOOTSTRAP_SERVER)"
+      server: "$(KAFKA_BOOTSTRAP_SERVERS)"
     schemaregistry:
       # Secret
       url: "$(KAFKA_SCHEMAREGISTRY_URL)"
