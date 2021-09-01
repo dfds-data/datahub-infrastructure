@@ -200,6 +200,8 @@ stages:
                     command: "repo"
                     arguments: "add datahub https://helm.datahubproject.io/"
 
+                - bash: cat $(Pipeline.Workspace)/datahub/dfdsvals.yaml
+
                 # Upgrade DataHub Helm Chart installation with DFDS Helm Chart Values File
                 - task: HelmDeploy@0
                   inputs:
