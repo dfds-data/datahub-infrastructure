@@ -8,7 +8,7 @@ output "es_password" {
 }
 
 output "db_host" {
-  value = module.db.db_instance_endpoint
+  value = module.db.db_instance_address
 }
 
 output "db_port" {
