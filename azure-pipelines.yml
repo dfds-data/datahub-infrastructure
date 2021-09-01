@@ -128,7 +128,7 @@ stages:
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
-                      terraform init
+                      terraform init -reconfigure
                       terraform apply -auto-approve plan.tfplan
                       terraform output -json > output.json
                     disableAutoCwd: true
