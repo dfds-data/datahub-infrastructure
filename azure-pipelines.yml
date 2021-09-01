@@ -18,6 +18,7 @@ pr: none
 variables:
   vmImage: ubuntu-latest
   terraformVersion: 1.0.5
+  dataHubHelmChartVersion: 0.2.16
 
 stages:
   # Continuous Integration steps
@@ -159,6 +160,7 @@ stages:
                     targetFiles: "*.yaml"
                     tokenPrefix: "$("
                     tokenSuffix: ")"
+                    actionOnMissing: "fail"
 
                 # Apply Kubernetes manifests
                 - task: Kubernetes@1
@@ -190,6 +192,7 @@ stages:
                     targetFiles: "*.yaml"
                     tokenPrefix: "$("
                     tokenSuffix: ")"
+                    actionOnMissing: "fail"
 
                 # Add DataHub Helm Chart Repository
                 - task: HelmDeploy@0
@@ -211,7 +214,7 @@ stages:
                     command: "upgrade"
                     chartType: "Name"
                     chartName: "datahub/datahub"
-                    chartVersion: "0.2.16"
+                    chartVersion: "$(dataHubHelmChartVersion)"
                     releaseName: "dfds-datahub"
                     install: false
                     arguments: "-i -f $(Pipeline.Workspace)/datahub/values.yaml -f $(Pipeline.Workspace)/datahub/dfdsvals.yaml"
