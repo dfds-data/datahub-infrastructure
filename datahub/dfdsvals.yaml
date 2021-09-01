@@ -6,7 +6,7 @@ global:
   datahub_analytics_enabled: false
   elasticsearch:
     # Secret
-    host: "$(es_host.value)"
+    host: "$(json.es_host.value)"
     port: "443"
     useSSL: true
     auth:
@@ -25,11 +25,11 @@ global:
   sql:
     datasource:
       # Secret
-      host: "$(db_host.value):$(db_port.value)"
+      host: "$(json.db_host.value):$(json.db_port.value)"
       # Secret
-      hostForMysqlClient: "$(db_host.value)"
+      hostForMysqlClient: "$(json.db_host.value)"
       # Secret
-      url: "jdbc:mysql://$(db_host.value):$(db_port.value)/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8&enabledTLSProtocols=TLSv1.2"
+      url: "jdbc:mysql://$(json.db_host.value):$(json.db_port.value)/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8&enabledTLSProtocols=TLSv1.2"
       # Secret
       username: "superuser"
       password:
