@@ -48,6 +48,14 @@ stages:
               workingDirectory: "$(System.DefaultWorkingDirectory)/terraform"
               failOnStandardError: true
 
+          # Delete files
+          # Delete folders, or files matching a pattern
+          - task: DeleteFiles@1
+            inputs:
+              Contents: |
+                '$(System.DefaultWorkingDirectory)/terraform/.terraform'
+                '$(System.DefaultWorkingDirectory)/terraform/.terraform.lock.hcl'
+
           # Upload Kubernetes manifests to current artifact Pipeline from folder /k8s
           - publish: $(System.DefaultWorkingDirectory)/k8s
             artifact: manifests
@@ -128,7 +136,7 @@ stages:
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
-                      terraform init -reconfigure
+                      terraform init
                       terraform apply -auto-approve plan.tfplan
                       terraform output -json > output.json
                     disableAutoCwd: true
