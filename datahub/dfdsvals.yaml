@@ -40,13 +40,9 @@ global:
     kafkastore.security.protocol: SASL_SSL
     sasl.mechanism: PLAIN
     sasl.username: "$(KAFKA_SASL_USERNAME)"
-    sasl.password:
-      secretRef: "datahub"
-      secretKey: "sasl-password"
+    sasl.password: "$(KAFKA_SASL_PASSWORD)"
     # Secret
-    sasl.jaas.config:
-      secretRef: "datahub"
-      secretKey: "sasl-jaas-config"
+    sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="$(KAFKA_SASL_USERNAME)" password="$(KAFKA_SASL_PASSWORD)";
 
 datahub-frontend:
   resources:
