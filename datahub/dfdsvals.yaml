@@ -64,9 +64,7 @@ datahub-frontend:
     - name: AUTH_OIDC_CLIENT_ID
       value: "$(AUTH_OIDC_CLIENT_ID)"
     - name: AUTH_OIDC_CLIENT_SECRET
-      value:
-        secretRef: "datahub"
-        secretKey: "auth-oidc-client-secret"
+      value: "$(AUTH_OIDC_CLIENT_SECRET)"
     - name: AUTH_OIDC_DISCOVERY_URI
       value: "$(AUTH_OIDC_DISCOVERY_URI)"
     - name: AUTH_OIDC_BASE_URL
