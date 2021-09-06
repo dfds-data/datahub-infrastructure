@@ -17,40 +17,71 @@ pr: none
 # Global variables for the pipeline
 variables:
   vmImage: ubuntu-latest
-  k8s-service-connection:
-  kubernetes-namespace:
+  terraformVersion: 1.0.5
+  dataHubHelmChartVersion: 0.2.16
 
 stages:
+  # Continuous Integration steps
   - stage: CI
-    displayName: CI
+    displayName: "Continuous Integration"
+
+    # Build jobs
     jobs:
-      - job: Prerequisites
-        displayName: Prerequisites
+      - job: Build
         pool:
           vmImage: $(vmImage)
-          steps:
-            - task: AWSShellScript@1
-              displayName: Create TF plan
-              inputs:
-                awsCredentials: ""
-                regionName: "eu-central-1"
-                scriptType: "inline"
-                inlineScript: |
-                  terraform init
-                  terraform plan --out plan.tfplan
-                  terraform apply -auto-approve plan.tfplan
-                  terraform output -json > output.json
-                disableAutoCwd: true
-                workingDirectory: "$(System.DefaultWorkingDirectory)/terraform"
-                failOnStandardError: true
-            - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
-              inputs:
-                jsonFile: "$(System.DefaultWorkingDirectory)/output/output.json"
+
+        steps:
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: $(terraformVersion)
+
+          - task: AWSShellScript@1
+            displayName: Create TF plan
+            inputs:
+              awsCredentials: "$(AWS_SERVICECONNECTION)"
+              regionName: "eu-central-1"
+              scriptType: "inline"
+              inlineScript: |
+                terraform init
+                terraform plan --out plan.tfplan
+              disableAutoCwd: true
+              workingDirectory: "$(System.DefaultWorkingDirectory)/terraform"
+              failOnStandardError: true
+
+          # Delete files
+          # Delete folders, or files matching a pattern
+          - task: DeleteFiles@1
+            inputs:
+              Contents: terraform/.terraform*
+
+          # Upload Kubernetes manifests to current artifact Pipeline from folder /k8s
+          - publish: $(System.DefaultWorkingDirectory)/k8s
+            artifact: manifests
+            displayName: "Publish Artifact: manifests"
+
+          # Upload Terraform plan to current artifact Pipeline from folder /terraform
+          - publish: $(System.DefaultWorkingDirectory)/terraform
+            artifact: terraform
+            displayName: "Publish Artifact: terraform"
+
+          # Upload DataHub Helm Chart Values Files to current artifact Pipeline from folder /datahub
+          - publish: $(System.DefaultWorkingDirectory)/datahub
+            artifact: datahub
+            displayName: "Publish Artifact: datahub"
+
+  # Continuous Deployment steps
+  - stage: CD
+    displayName: "Continuous Deployment"
+    dependsOn: CI
+    # Run CD only if CI succeeds
+    condition: succeeded()
+    jobs:
       - deployment: K8s
-        displayName: Deploy to Kubernetes
+        displayName: "Deploy to Kubernetes"
         variables:
           AWS_PROFILE: "saml"
-        environment: ""
+        environment: "datahub-dev"
 
         strategy:
           runOnce:
@@ -84,57 +115,107 @@ stages:
                     SAML2AWS_PASSWORD: $(SAML2AWS_PASSWORD)
                     SAML2AWS_USERNAME: $(SAML2AWS_USERNAME)
                     SAML2AWS_ROLE: $(SAML2AWS_ROLE)
+
+                # Terraform
+                # Install Terraform
+                - task: TerraformInstaller@0
+                  inputs:
+                    terraformVersion: $(terraformVersion)
+
+                # Download Terraform folder from current artifacts pipeline
+                - download: current
+                  artifact: terraform
+                  displayName: "Download Artifact: terraform"
+
+                # Apply Terraform plan
+                - task: AWSShellScript@1
+                  displayName: Apply TF plan
+                  inputs:
+                    awsCredentials: "$(AWS_SERVICECONNECTION)"
+                    regionName: "eu-central-1"
+                    scriptType: "inline"
+                    inlineScript: |
+                      terraform init
+                      terraform apply -auto-approve plan.tfplan
+                      terraform output -json > output.json
+                    disableAutoCwd: true
+                    workingDirectory: "$(Pipeline.Workspace)/terraform"
+                    failOnStandardError: true
+
+                # Terraform output to variables
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
                   inputs:
-                  jsonFile:
-                    "$(System.DefaultWorkingDirectory)/output/output.json"
-                    # Replace token values in yaml files with pipeline variables
+                    jsonFile: "$(Pipeline.Workspace)/terraform/output.json"
+
+                # Download manifest from current artifacts pipeline
+                - download: current
+                  artifact: manifests
+                  displayName: "Download Artifact: manifests"
+
+                # Replace token values in yaml files with pipeline variables
                 - task: qetza.replacetokens.replacetokens-task.replacetokens@3
                   displayName: "Replace tokens in yaml files"
                   inputs:
-                    rootDirectory: "$(System.DefaultWorkingDirectory)/k8s/"
+                    rootDirectory: "$(Pipeline.Workspace)/manifests/"
                     targetFiles: "*.yaml"
                     tokenPrefix: "$("
                     tokenSuffix: ")"
+                    actionOnMissing: "fail"
 
                 # Apply Kubernetes manifests
                 - task: Kubernetes@1
                   displayName: "Apply manifests"
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: "$(k8s-service-connection)"
-                    namespace: $(kubernetes-namespace)
+                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
+                    namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
-      - job: Helm
-        displayName: "Deploy to Kubernetes"
-        pool:
-          vmImage: $(vmImage)
 
-        steps:
-          # Install the Helm binary to the host machine
-          - task: HelmInstaller@1
-            displayName: "Helm client installer"
-            inputs:
-              helmVersionToInstall: 3.2.4
+                # DataHub
+                # Install the Helm binary to the host machine
+                - task: HelmInstaller@1
+                  displayName: "Helm client installer"
+                  inputs:
+                    helmVersionToInstall: 3.2.4
 
-          - task: HelmDeploy@0
-            inputs:
-              connectionType: "Kubernetes Service Connection"
-              kubernetesServiceConnection: $(k8s-service-connection)
-              namespace: $(kubernetes-namespace)
-              command: "repo"
-              arguments: "add datahub https://helm.datahubproject.io/"
+                # Download DataHub folder from current artifacts pipeline
+                - download: current
+                  artifact: datahub
+                  displayName: "Download Artifact: datahub"
 
-          - task: HelmDeploy@0
-            inputs:
-              connectionType: "Kubernetes Service Connection"
-              kubernetesServiceConnection: $(k8s-service-connection)
-              namespace: $(kubernetes-namespace)
-              command: "upgrade"
-              chartType: "Name"
-              chartName: "datahub/datahub"
-              chartVersion: "0.2.16"
-              releaseName: "dfds-datahub"
-              install: false
-              arguments: "-i -f values.yaml -f values-compass.yaml"
+                # Replace token values in yaml files with pipeline variables
+                - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+                  displayName: "Replace tokens in yaml files"
+                  inputs:
+                    rootDirectory: "$(Pipeline.Workspace)/datahub/"
+                    targetFiles: "*.yaml"
+                    tokenPrefix: "$("
+                    tokenSuffix: ")"
+                    actionOnMissing: "fail"
+
+                # Add DataHub Helm Chart Repository
+                - task: HelmDeploy@0
+                  inputs:
+                    connectionType: "Kubernetes Service Connection"
+                    kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
+                    namespace: $(K8S_NAMESPACE)
+                    command: "repo"
+                    arguments: "add datahub https://helm.datahubproject.io/"
+
+                - bash: cat $(Pipeline.Workspace)/datahub/dfdsvals.yaml
+
+                # Upgrade DataHub Helm Chart installation with DFDS Helm Chart Values File
+                - task: HelmDeploy@0
+                  inputs:
+                    connectionType: "Kubernetes Service Connection"
+                    kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
+                    namespace: $(K8S_NAMESPACE)
+                    command: "upgrade"
+                    chartType: "Name"
+                    chartName: "datahub/datahub"
+                    chartVersion: "$(dataHubHelmChartVersion)"
+                    releaseName: "dfds-datahub"
+                    install: false
+                    arguments: "-i -f $(Pipeline.Workspace)/datahub/values.yaml -f $(Pipeline.Workspace)/datahub/dfdsvals.yaml"
+                    waitForExecution: false
