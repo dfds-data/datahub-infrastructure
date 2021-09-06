@@ -81,7 +81,7 @@ stages:
         displayName: "Deploy to Kubernetes"
         variables:
           AWS_PROFILE: "saml"
-        environment: "datahub-dev"
+        environment: "datahub-prod"
 
         strategy:
           runOnce:
