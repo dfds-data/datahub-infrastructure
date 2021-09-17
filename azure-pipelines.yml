@@ -114,7 +114,7 @@ stages:
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
                   inputs:
-                    awsCredentials: "$(AWS_SERVICECONNECTION)"
+                    awsCredentials: "dataplatform-aws-deploy"
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
@@ -123,8 +123,6 @@ stages:
                     disableAutoCwd: true
                     workingDirectory: "$(System.DefaultWorkingDirectory)/terraform/terragrunt/dev"
                     failOnStandardError: true
-                  env:
-                    AWS_SERVICECONNECTION: $(AWS_SERVICECONNECTION)
 
                 # Terraform output to variables
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
