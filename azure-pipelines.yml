@@ -123,6 +123,8 @@ stages:
                     disableAutoCwd: true
                     workingDirectory: "$(System.DefaultWorkingDirectory)/terraform/terragrunt/dev"
                     failOnStandardError: true
+                  env:
+                    AWS_SERVICECONNECTION: $(AWS_SERVICECONNECTION)
 
                 # Terraform output to variables
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
@@ -285,6 +287,8 @@ stages:
                     disableAutoCwd: true
                     workingDirectory: "$(System.DefaultWorkingDirectory)/terraform/terragrunt/prod"
                     failOnStandardError: true
+                  env:
+                    AWS_SERVICECONNECTION: $(AWS_SERVICECONNECTION)
 
                 # Terraform output to variables
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
