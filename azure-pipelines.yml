@@ -49,13 +49,6 @@ stages:
     # Run CD only if CI succeeds
     condition: succeeded()
 
-    variables:
-      - group: AWS-dev
-      - group: datahub-dev
-      - group: K8s-dev
-      - group: kafka-dev
-      - group: saml2aws-dev
-
     jobs:
       - deployment: K8s
         displayName: "Deploy to Kubernetes"
@@ -218,18 +211,17 @@ stages:
     # Run CD only if CI succeeds
     condition: succeeded()
 
-    variables:
-      - group: AWS
-      - group: datahub
-      - group: K8s
-      - group: kafka
-      - group: saml2aws
-
     jobs:
       - deployment: K8s
         displayName: "Deploy to Kubernetes"
         variables:
-          AWS_PROFILE: "saml"
+        - group: AWS
+        - group: datahub
+        - group: K8s
+        - group: kafka
+        - group: saml2aws
+        - name: AWS_PROFILE
+          value: "saml"
         environment: "datahub-prod"
 
         strategy:
