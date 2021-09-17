@@ -60,8 +60,15 @@ stages:
       - deployment: K8s
         displayName: "Deploy to Kubernetes"
         variables:
-          AWS_PROFILE: "saml"
+        - group: AWS-dev
+        - group: datahub-dev
+        - group: K8s-dev
+        - group: kafka-dev
+        - group: saml2aws-dev
+        - name: AWS_PROFILE
+          value: "saml"
         environment: "datahub-dev"
+        
 
         strategy:
           runOnce:
