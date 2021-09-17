@@ -114,7 +114,7 @@ stages:
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
                   inputs:
-                    awsCredentials: "dataplatform-aws-deploy"
+                    awsCredentials: "$(AWS_SERVICECONNECTION)"
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
@@ -276,7 +276,7 @@ stages:
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
                   inputs:
-                    awsCredentials: "datadelivery-aws-deploy"
+                    awsCredentials: "$(AWS_SERVICECONNECTION)"
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
