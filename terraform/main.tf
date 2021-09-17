@@ -2,11 +2,18 @@
 provider "aws" {
   region = "eu-central-1"
 }
+
+terraform {
+	# The configuration for this backend will be filled in by Terragrunt
+	backend "s3" {}
+	required_version = ">= 0.12"
+}
+
 locals {
   name = "datacatalogue"
   tags = {
     Name        = "datacatalogue"
-    Environment = "prod"
+    Environment = "${var.env}"
   }
 }
 
