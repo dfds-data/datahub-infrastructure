@@ -152,6 +152,9 @@ stages:
                     namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
+                  env:
+                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
+                    K8S_NAMESPACE: $(K8S_NAMESPACE)
 
                 # DataHub
                 # Install the Helm binary to the host machine
@@ -183,8 +186,9 @@ stages:
                     namespace: $(K8S_NAMESPACE)
                     command: "repo"
                     arguments: "add datahub https://helm.datahubproject.io/"
-
-                - bash: cat $(Pipeline.Workspace)/datahub/dfdsvals.yaml
+                  env:
+                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
+                    K8S_NAMESPACE: $(K8S_NAMESPACE)
 
                 # Upgrade DataHub Helm Chart installation with DFDS Helm Chart Values File
                 - task: HelmDeploy@0
@@ -202,6 +206,9 @@ stages:
                       "-i -f $(Pipeline.Workspace)/datahub/values.yaml -f
                       $(Pipeline.Workspace)/datahub/dfdsvals.yaml"
                     waitForExecution: false
+                  env:
+                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
+                    K8S_NAMESPACE: $(K8S_NAMESPACE)
 
   # Continuous Deployment steps
   - stage: CD
@@ -312,6 +319,9 @@ stages:
                     namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
+                  env:
+                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
+                    K8S_NAMESPACE: $(K8S_NAMESPACE)
 
                 # DataHub
                 # Install the Helm binary to the host machine
@@ -343,6 +353,9 @@ stages:
                     namespace: $(K8S_NAMESPACE)
                     command: "repo"
                     arguments: "add datahub https://helm.datahubproject.io/"
+                  env:
+                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
+                    K8S_NAMESPACE: $(K8S_NAMESPACE)
 
                 - bash: cat $(Pipeline.Workspace)/datahub/dfdsvals.yaml
 
@@ -362,3 +375,6 @@ stages:
                       "-i -f $(Pipeline.Workspace)/datahub/values.yaml -f
                       $(Pipeline.Workspace)/datahub/dfdsvals.yaml"
                     waitForExecution: false
+                  env:
+                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
+                    K8S_NAMESPACE: $(K8S_NAMESPACE)
