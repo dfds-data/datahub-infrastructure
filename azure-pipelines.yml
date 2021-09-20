@@ -145,13 +145,10 @@ stages:
 
                 # Apply Kubernetes manifests
                 - task: Kubernetes@1
-                  env:
-                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
-                    K8S_NAMESPACE: $(K8S_NAMESPACE)
                   displayName: "Apply manifests"
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
+                    kubernetesServiceEndpoint: $(K8S_SERVICECONNECTION)
                     namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
@@ -180,9 +177,6 @@ stages:
 
                 # Add DataHub Helm Chart Repository
                 - task: HelmDeploy@0
-                  env:
-                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
-                    K8S_NAMESPACE: $(K8S_NAMESPACE)
                   inputs:
                     connectionType: "Kubernetes Service Connection"
                     kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
@@ -192,9 +186,6 @@ stages:
 
                 # Upgrade DataHub Helm Chart installation with DFDS Helm Chart Values File
                 - task: HelmDeploy@0
-                  env:
-                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
-                    K8S_NAMESPACE: $(K8S_NAMESPACE)
                   inputs:
                     connectionType: "Kubernetes Service Connection"
                     kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
@@ -312,13 +303,10 @@ stages:
 
                 # Apply Kubernetes manifests
                 - task: Kubernetes@1
-                  env:
-                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
-                    K8S_NAMESPACE: $(K8S_NAMESPACE)
                   displayName: "Apply manifests"
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
+                    kubernetesServiceEndpoint: $(K8S_SERVICECONNECTION)
                     namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
@@ -347,9 +335,6 @@ stages:
 
                 # Add DataHub Helm Chart Repository
                 - task: HelmDeploy@0
-                  env:
-                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
-                    K8S_NAMESPACE: $(K8S_NAMESPACE)
                   inputs:
                     connectionType: "Kubernetes Service Connection"
                     kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
@@ -361,9 +346,6 @@ stages:
 
                 # Upgrade DataHub Helm Chart installation with DFDS Helm Chart Values File
                 - task: HelmDeploy@0
-                  env:
-                    K8S_SERVICECONNECTION: $(K8S_SERVICECONNECTION)
-                    K8S_NAMESPACE: $(K8S_NAMESPACE)
                   inputs:
                     connectionType: "Kubernetes Service Connection"
                     kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
