@@ -38,6 +38,11 @@ stages:
             artifact: manifests
             displayName: "Publish Artifact: manifests"
 
+          # Upload Terraform plan to current artifact Pipeline from folder /terraform
+          - publish: $(System.DefaultWorkingDirectory)/terraform
+            artifact: terraform
+            displayName: "Publish Artifact: terraform"
+
           # Upload DataHub Helm Chart Values Files to current artifact Pipeline from folder /datahub
           - publish: $(System.DefaultWorkingDirectory)/datahub
             artifact: datahub
@@ -108,6 +113,11 @@ stages:
                     targetType: "inline"
                     script: "brew install terragrunt"
 
+                # Download Terraform folder from current artifacts pipeline
+                - download: current
+                  artifact: terraform
+                  displayName: "Download Artifact: terraform"
+
                 # Apply and output Terragrunt
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
@@ -119,7 +129,7 @@ stages:
                       terragrunt apply
                       terragrunt output -json > output.json
                     disableAutoCwd: true
-                    workingDirectory: "$(System.DefaultWorkingDirectory)/terraform/terragrunt/dev"
+                    workingDirectory: "$(Pipeline.Workspace)/terraform/terragrunt/dev"
                     failOnStandardError: true
 
                 # Terraform output to variables
@@ -267,6 +277,11 @@ stages:
                     script: "brew install terragrunt"
                     failOnStderr: true
 
+                # Download Terraform folder from current artifacts pipeline
+                - download: current
+                  artifact: terraform
+                  displayName: "Download Artifact: terraform"
+
                 # Apply and output Terragrunt
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
@@ -278,7 +293,7 @@ stages:
                       terragrunt apply
                       terragrunt output -json > output.json
                     disableAutoCwd: true
-                    workingDirectory: "$(System.DefaultWorkingDirectory)/terraform/terragrunt/prod"
+                    workingDirectory: "$(Pipeline.Workspace)/terraform/terragrunt/prod"
                     failOnStandardError: true
 
                 # Terraform output to variables
