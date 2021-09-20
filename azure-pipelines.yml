@@ -44,6 +44,13 @@ stages:
 
   # Continuous Deployment steps
   - stage: CDD
+    variables:
+    - group: datahub-dev
+    - group: K8s-dev
+    - group: kafka-dev
+    - group: saml2aws-dev
+    - name: AWS_PROFILE
+      value: "saml"
     displayName: "Continuous Deployment"
     dependsOn: CI
     # Run CD only if CI succeeds
@@ -52,13 +59,6 @@ stages:
     jobs:
       - deployment: K8s
         displayName: "Deploy to Kubernetes"
-        variables:
-        - group: datahub-dev
-        - group: K8s-dev
-        - group: kafka-dev
-        - group: saml2aws-dev
-        - name: AWS_PROFILE
-          value: "saml"
         environment: "datahub-dev"
         
 
@@ -205,6 +205,13 @@ stages:
 
   # Continuous Deployment steps
   - stage: CD
+    variables:
+    - group: datahub
+    - group: K8s
+    - group: kafka
+    - group: saml2aws
+    - name: AWS_PROFILE
+      value: "saml"
     displayName: "Continuous Deployment"
     dependsOn: CDD
     # Run CD only if CI succeeds
@@ -213,13 +220,6 @@ stages:
     jobs:
       - deployment: K8s
         displayName: "Deploy to Kubernetes"
-        variables:
-        - group: datahub
-        - group: K8s
-        - group: kafka
-        - group: saml2aws
-        - name: AWS_PROFILE
-          value: "saml"
         environment: "datahub-prod"
 
         strategy:
