@@ -130,7 +130,6 @@ stages:
                       terragrunt output -json > output.json
                     disableAutoCwd: true
                     workingDirectory: "$(Pipeline.Workspace)/terraform/terragrunt/dev"
-                    failOnStandardError: true
 
                 # Terraform output to variables
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
@@ -294,7 +293,6 @@ stages:
                       terragrunt output -json > output.json
                     disableAutoCwd: true
                     workingDirectory: "$(Pipeline.Workspace)/terraform/terragrunt/prod"
-                    failOnStandardError: true
 
                 # Terraform output to variables
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
