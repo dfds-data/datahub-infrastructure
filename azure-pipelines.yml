@@ -53,7 +53,6 @@ stages:
       - deployment: K8s
         displayName: "Deploy to Kubernetes"
         variables:
-        - group: AWS-dev
         - group: datahub-dev
         - group: K8s-dev
         - group: kafka-dev
@@ -114,7 +113,7 @@ stages:
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
                   inputs:
-                    awsCredentials: "$(AWS_SERVICECONNECTION)"
+                    awsCredentials: "dataplatform-aws-deploy"
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
@@ -123,8 +122,6 @@ stages:
                     disableAutoCwd: true
                     workingDirectory: "$(System.DefaultWorkingDirectory)/terraform/terragrunt/dev"
                     failOnStandardError: true
-                  env:
-                    $(AWS_SERVICECONNECTION): $(AWS_SERVICECONNECTION)
 
                 # Terraform output to variables
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
@@ -217,7 +214,6 @@ stages:
       - deployment: K8s
         displayName: "Deploy to Kubernetes"
         variables:
-        - group: AWS
         - group: datahub
         - group: K8s
         - group: kafka
@@ -277,7 +273,7 @@ stages:
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
                   inputs:
-                    awsCredentials: "$(AWS_SERVICECONNECTION)"
+                    awsCredentials: "datadelivery-aws-deploy"
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
