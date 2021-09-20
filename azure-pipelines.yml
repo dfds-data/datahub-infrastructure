@@ -16,7 +16,8 @@ pr: none
 
 # Global variables for the pipeline
 variables:
-  vmImage: ubuntu-latest
+  vmImage: "ubuntu-latest"
+  k8s-service-connection: "Kubernetes-Hellman-Saml2aws"
   terraformVersion: 1.0.5
   dataHubHelmChartVersion: 0.2.16
 
@@ -147,7 +148,7 @@ stages:
                   displayName: "Apply manifests"
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
+                    kubernetesServiceEndpoint: "$(k8s-service-connection)"
                     namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
@@ -178,7 +179,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: "$(K8S_SERVICECONNECTION)"
+                    kubernetesServiceConnection: "$(k8s-service-connection)"
                     namespace: $(K8S_NAMESPACE)
                     command: "repo"
                     arguments: "add datahub https://helm.datahubproject.io/"
@@ -187,7 +188,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: "$(K8S_SERVICECONNECTION)"
+                    kubernetesServiceConnection: "$(k8s-service-connection)"
                     namespace: $(K8S_NAMESPACE)
                     command: "upgrade"
                     chartType: "Name"
@@ -306,7 +307,7 @@ stages:
                   displayName: "Apply manifests"
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
+                    kubernetesServiceEndpoint: "$(k8s-service-connection)"
                     namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
@@ -337,7 +338,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: "$(K8S_SERVICECONNECTION)"
+                    kubernetesServiceConnection: "$(k8s-service-connection)"
                     namespace: $(K8S_NAMESPACE)
                     command: "repo"
                     arguments: "add datahub https://helm.datahubproject.io/"
@@ -346,7 +347,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: "$(K8S_SERVICECONNECTION)"
+                    kubernetesServiceConnection: "$(k8s-service-connection)"
                     namespace: $(K8S_NAMESPACE)
                     command: "upgrade"
                     chartType: "Name"
