@@ -148,7 +148,7 @@ stages:
                   displayName: "Apply manifests"
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: $(K8S_SERVICECONNECTION)
+                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
                     namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
@@ -179,7 +179,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
+                    kubernetesServiceConnection: "$(K8S_SERVICECONNECTION)"
                     namespace: $(K8S_NAMESPACE)
                     command: "repo"
                     arguments: "add datahub https://helm.datahubproject.io/"
@@ -188,7 +188,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
+                    kubernetesServiceConnection: "$(K8S_SERVICECONNECTION)"
                     namespace: $(K8S_NAMESPACE)
                     command: "upgrade"
                     chartType: "Name"
@@ -306,7 +306,7 @@ stages:
                   displayName: "Apply manifests"
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: $(K8S_SERVICECONNECTION)
+                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
                     namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
@@ -337,7 +337,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
+                    kubernetesServiceConnection: "$(K8S_SERVICECONNECTION)"
                     namespace: $(K8S_NAMESPACE)
                     command: "repo"
                     arguments: "add datahub https://helm.datahubproject.io/"
@@ -348,7 +348,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
+                    kubernetesServiceConnection: "$(K8S_SERVICECONNECTION)"
                     namespace: $(K8S_NAMESPACE)
                     command: "upgrade"
                     chartType: "Name"
