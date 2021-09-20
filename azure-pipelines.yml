@@ -103,11 +103,11 @@ stages:
                     terraformVersion: $(terraformVersion)
 
                 # Install Terragrunt
-                - task: Bash@3
-                  inputs:
-                    targetType: "inline"
-                    script: "brew install terragrunt"
-                    failOnStderr: true
+                # - task: Bash@3
+                #   inputs:
+                #     targetType: "inline"
+                #     script: "brew install terragrunt"
+                #     failOnStderr: true
 
                 # Apply and output Terragrunt
                 - task: AWSShellScript@1
