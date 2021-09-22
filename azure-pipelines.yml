@@ -18,7 +18,7 @@ pr: none
 variables:
   vmImage: ubuntu-latest
   terraformVersion: 1.0.5
-  dataHubHelmChartVersion: 0.2.16
+  dataHubHelmChartVersion: 0.2.23
 
 stages:
   # Continuous Integration steps
