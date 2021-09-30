@@ -1,6 +1,6 @@
 # DFDS Data Catalogue (DataHub)
 
-This repository holds terraform code and configuration for the
+This repository holds the terraform code, terragrunt code and configuration for the
 [DataHub helm-chart](https://github.com/acryldata/datahub-helm/) as used in DFDS.
 
 ## Terraform/Terragrunt
