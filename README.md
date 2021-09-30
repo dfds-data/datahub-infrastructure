@@ -59,3 +59,11 @@ The flow is roughly like this:
    [values](values-compass.yaml).
 3. Run `helm upgrade` against the k8s cluster
 4. Repeat 1-3 for prod environment
+
+## How to upgrade
+
+1. Update the [dataHubHelmChartVersion](azure-pipelines.yml) to the desired version. You can find
+   the DataHub Helm Chart releases [here](https://github.com/acryldata/datahub-helm/releases).
+2. Update the [DataHub Helm Chart Values YAML file](datahub/values.yaml) with the corresponding
+   versions of the different components.
+3. Deploy.
