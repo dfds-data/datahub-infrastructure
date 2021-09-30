@@ -1,0 +1,12 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dfds-datahub-datahub-frontend
+spec:
+  routes:
+    - kind: Rule
+      match: Host(`$(HOST)`) && PathPrefix(`/`)
+      services:
+        - kind: Service
+          name: dfds-datahub-datahub-frontend
+          port: 9002
