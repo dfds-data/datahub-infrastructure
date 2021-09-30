@@ -1,23 +1,24 @@
 # DFDS Data Catalogue (DataHub)
 
-This repository holds terraform code and configuration for the
+This repository holds the terraform code, terragrunt code and configuration for the
 [DataHub helm-chart](https://github.com/acryldata/datahub-helm/) as used in DFDS.
 
-## Terraform
+## Terraform/Terragrunt
 
-If starting from scratch, edit "terraform.backend.s3.bucket" in terraform/backend.tf to be an unique
-value (S3 naming limitation). Otherwise leave as-is.
+If starting from scratch, edit "remote_state.config.bucket" in
+terraform/terragrunt/dev/terragrunt.hcl to be an unique value (S3 naming limitation). Otherwise
+leave as-is.
 
 ```bash
-cd terraform
-terraform init
-terraform apply
+cd terraform/terragrunt/dev
+terragrunt init
+terragrunt apply
 ```
 
 You can retrieve the hostnames and passwords by running
 
 ```bash
-terraform output -json
+terragrunt output -json
 ```
 
 This is also what the CI/CD pipeline uses to pass the values on to the helm chart.
@@ -33,7 +34,7 @@ We use mostly managed prerequisites, which includes
 - AWS Elastic Search
 - AWS RDS managed MySQL
 
-The only self-managed service is Confluent Schema Registry, which runs in k8s.
+The only self-managed service is Confluent Schema Registry, which runs in EKS.
 
 See the [terraform code](./terraform) for more details. We don't use a graph database such as Neo4j.
 
@@ -53,7 +54,8 @@ be configured manually in Azure Pipelines.
 
 The flow is roughly like this:
 
-1. Upgrade infrastructure with terraform
+1. Upgrade infrastructure with terragrunt for the dev environment
 2. If successful, get terraform output and replace in [secrets](./k8s/secret.yaml) and
    [values](values-compass.yaml).
 3. Run `helm upgrade` against the k8s cluster
+4. Repeat 1-3 for prod environment
