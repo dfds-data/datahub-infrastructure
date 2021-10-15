@@ -3,7 +3,6 @@
 
 global:
   graph_service_impl: "elasticsearch"
-  datahub_analytics_enabled: false
   elasticsearch:
     # Secret
     host: "$(json.es_host.value)"
