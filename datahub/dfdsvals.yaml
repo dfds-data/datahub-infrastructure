@@ -108,6 +108,8 @@ datahub-gms:
 
     - name: DATAHUB_USAGE_EVENT_NAME
       value: "$(DATAHUB_USAGE_EVENT_TOPIC_NAME)"
+    - name: DATAHUB_USAGE_EVENT_KAFKA_CONSUMER_GROUP_ID
+      value: "$(DATAHUB_USAGE_EVENT_KAFKA_CONSUMER_GROUP_ID)"
 
 kafkaSetupJob:
   enabled: false
