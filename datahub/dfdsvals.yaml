@@ -69,6 +69,8 @@ datahub-frontend:
       value: "$(AUTH_OIDC_DISCOVERY_URI)"
     - name: AUTH_OIDC_BASE_URL
       value: "https://$(HOST)"
+    - name: DATAHUB_TRACKING_TOPIC
+      value: "$(DATAHUB_USAGE_EVENT_TOPIC_NAME)"
 
 datahub-gms:
   resources:
