@@ -1,6 +1,11 @@
 # Values to deploy datahub with the helm chart
 # See: https://github.com/acryldata/datahub-helm
 
+elasticsearchSetupJob:
+  extraEnvs:
+  - name: USE_AWS_ELASTICSEARCH
+    value: "true"
+
 global:
   graph_service_impl: "elasticsearch"
   elasticsearch:
@@ -121,6 +126,8 @@ datahub-gms:
       value: "$(METADATA_CHANGE_LOG_KAFKA_CONSUMER_GROUP_ID)"
     - name: METADATA_CHANGE_PROPOSAL_KAFKA_CONSUMER_GROUP_ID
       value: "$(METADATA_CHANGE_PROPOSAL_KAFKA_CONSUMER_GROUP_ID)"
+    - name: USE_AWS_ELASTICSEARCH
+      value: "true"
 
 kafkaSetupJob:
   enabled: false
