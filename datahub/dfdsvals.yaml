@@ -1,9 +1,13 @@
 # Values to deploy datahub with the helm chart
 # See: https://github.com/acryldata/datahub-helm
 
+elasticsearchSetupJob:
+  extraEnvs:
+  - name: USE_AWS_ELASTICSEARCH
+    value: "true"
+
 global:
   graph_service_impl: "elasticsearch"
-  datahub_analytics_enabled: false
   elasticsearch:
     # Secret
     host: "$(json.es_host.value)"
@@ -65,6 +69,8 @@ datahub-frontend:
       value: "$(AUTH_OIDC_DISCOVERY_URI)"
     - name: AUTH_OIDC_BASE_URL
       value: "https://$(HOST)"
+    - name: DATAHUB_TRACKING_TOPIC
+      value: "$(DATAHUB_USAGE_EVENT_TOPIC_NAME)"
 
 datahub-gms:
   resources:
@@ -106,6 +112,24 @@ datahub-gms:
       value: "$(METADATA_AUDIT_EVENT_KAFKA_CONSUMER_GROUP_ID)"
     - name: METADATA_CHANGE_EVENT_KAFKA_CONSUMER_GROUP_ID
       value: "$(METADATA_CHANGE_EVENT_KAFKA_CONSUMER_GROUP_ID)"
+
+    # Analytics
+    - name: DATAHUB_USAGE_EVENT_NAME
+      value: "$(DATAHUB_USAGE_EVENT_TOPIC_NAME)"
+    - name: DATAHUB_USAGE_EVENT_KAFKA_CONSUMER_GROUP_ID
+      value: "$(DATAHUB_USAGE_EVENT_KAFKA_CONSUMER_GROUP_ID)"
+    - name: METADATA_CHANGE_LOG_TOPIC_NAME
+      value: "$(METADATA_CHANGE_LOG_VERSIONED_TOPIC_NAME)"
+    - name: METADATA_CHANGE_LOG_LIMITED_TOPIC_NAME
+      value: "$(METADATA_CHANGE_LOG_TIMESERIES_TOPIC_NAME)"
+    - name: DATAHUB_TRACKING_TOPIC
+      value: "$(DATAHUB_USAGE_EVENT_TOPIC_NAME)"
+    - name: METADATA_CHANGE_LOG_KAFKA_CONSUMER_GROUP_ID
+      value: "$(METADATA_CHANGE_LOG_KAFKA_CONSUMER_GROUP_ID)"
+    - name: METADATA_CHANGE_PROPOSAL_KAFKA_CONSUMER_GROUP_ID
+      value: "$(METADATA_CHANGE_PROPOSAL_KAFKA_CONSUMER_GROUP_ID)"
+    - name: USE_AWS_ELASTICSEARCH
+      value: "true"
 
 kafkaSetupJob:
   enabled: false
