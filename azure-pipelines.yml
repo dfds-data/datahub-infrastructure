@@ -16,9 +16,11 @@ pr: none
 
 # Global variables for the pipeline
 variables:
-  vmImage: ubuntu-latest
   terraformVersion: 1.0.5
   dataHubHelmChartVersion: 0.2.23
+
+pool:
+  vmImage: ubuntu-latest
 
 stages:
   # Continuous Integration steps
@@ -28,8 +30,6 @@ stages:
     # Build jobs
     jobs:
       - job: Build
-        pool:
-          vmImage: $(vmImage)
 
         steps:
           # Upload Kubernetes manifests to current artifact Pipeline from folder /k8s
