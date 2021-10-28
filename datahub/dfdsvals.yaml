@@ -71,6 +71,8 @@ datahub-frontend:
       value: "https://$(HOST)"
     - name: DATAHUB_TRACKING_TOPIC
       value: "$(DATAHUB_USAGE_EVENT_TOPIC_NAME)"
+    - name: AUTH_JAAS_ENABLED
+      value: "false"
 
 datahub-gms:
   resources:
