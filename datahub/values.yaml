@@ -28,8 +28,8 @@ datahub-mce-consumer:
 datahub-ingestion-cron:
   enabled: false
   image:
-    repository: linkedin/datahub-ingestion
-    tag: "v0.8.19"
+    repository: acryldata/datahub-ingestion
+    tag: "v0.8.19.0"
 
 elasticsearchSetupJob:
   enabled: true
@@ -47,13 +47,13 @@ mysqlSetupJob:
   enabled: true
   image:
     repository: acryldata/datahub-mysql-setup
-    tag: "v0.8.19"
+    tag: "v0.8.19.0"
 
 datahubUpgrade:
   enabled: true
   image:
     repository: acryldata/datahub-upgrade
-    tag: "v0.8.19"
+    tag: "v0.8.19.0"
   noCodeDataMigration:
     sqlDbType: "MYSQL"
 
@@ -107,7 +107,6 @@ global:
     mae_consumer:
       port: "9091"
     appVersion: "1.0"
-
 #  hostAliases:
 #    - ip: "192.168.0.104"
 #      hostnames:
