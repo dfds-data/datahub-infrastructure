@@ -133,5 +133,10 @@ datahub-gms:
     - name: USE_AWS_ELASTICSEARCH
       value: "true"
 
+acryl-datahub-actions:
+  # This has been disabled until https://datahubspace.slack.com/archives/C029A3M079U/p1646228736120819 is resolved
+  # There is also likely to be some topic name env-vars needed here before it works
+  enabled: false
+
 kafkaSetupJob:
   enabled: false
