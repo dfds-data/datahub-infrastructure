@@ -70,3 +70,20 @@ The flow is roughly like this:
 2. Update the [DataHub Helm Chart Values YAML file](datahub/values.yaml) with the corresponding
    versions of the different components.
 3. Deploy.
+
+## Note on UI-based ingestion
+
+**This should be revisited when UI-based ingestion is implemented**
+
+Starting from v0.8.26, UI-based ingestion is possible in DataHub. However, the feature is still
+quite young and the documentation is scarce.
+
+We have found, that the current accepted workaround for making the `datahub-actions` pod work, is
+to:
+
+- Manually specify the configurations for Kafka under `extraEnvs` for the container, without a
+  `SPRING_` prefix (same configurations as GMS are needed)
+- Find some way to change the Kafka topic names to our custom ones for this container too
+
+These things are difficult right now, because the code has not been open sourced yet. Therefore, the
+decision is made to hold off on implementing this until it is a bit more straight forward.
