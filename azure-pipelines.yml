@@ -110,7 +110,9 @@ stages:
                 - task: Bash@3
                   inputs:
                     targetType: "inline"
-                    script: "brew install terragrunt"
+                    script: | 
+                      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+                      brew install terragrunt
 
                 # Download Terraform folder from current artifacts pipeline
                 - download: current
