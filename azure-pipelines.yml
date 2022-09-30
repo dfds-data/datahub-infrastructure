@@ -107,12 +107,16 @@ stages:
                     terraformVersion: $(terraformVersion)
 
                 # Install Terragrunt
-                - task: Bash@3
-                  inputs:
-                    targetType: "inline"
-                    script: | 
-                      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-                      brew install terragrunt
+                #- task: Bash@3
+                #  inputs:
+                #    targetType: "inline"
+                #    script: "brew install terragrunt"
+
+                - bash: |
+                    curl -Ls https://github.com/gruntwork-io/terragrunt/releases/download/v0.39.0/terragrunt_linux_amd64 -o terragrunt
+                    chmod +x terragrunt
+                    mv terragrunt /usr/local/bin/    
+                  displayName: Install Terragrunt
 
                 # Download Terraform folder from current artifacts pipeline
                 - download: current
