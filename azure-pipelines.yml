@@ -165,6 +165,7 @@ stages:
                     namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
+                    versionSpec: 1.22.9
 
                 # DataHub
                 # Install the Helm binary to the host machine
