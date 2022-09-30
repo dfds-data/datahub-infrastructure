@@ -17,6 +17,7 @@ pr: none
 # Global variables for the pipeline
 variables:
   terraformVersion: 1.0.5
+  terragruntVersion: 0.39.0
   dataHubHelmChartVersion: 0.2.88
 
 pool:
@@ -107,13 +108,8 @@ stages:
                     terraformVersion: $(terraformVersion)
 
                 # Install Terragrunt
-                #- task: Bash@3
-                #  inputs:
-                #    targetType: "inline"
-                #    script: "brew install terragrunt"
-
                 - bash: |
-                    curl -Ls https://github.com/gruntwork-io/terragrunt/releases/download/v0.39.0/terragrunt_linux_amd64 -o terragrunt
+                    curl -Ls https://github.com/gruntwork-io/terragrunt/releases/download/v${terragruntVersion}/terragrunt_linux_amd64 -o terragrunt
                     chmod +x terragrunt
                     mv terragrunt /usr/local/bin/    
                   displayName: Install Terragrunt
