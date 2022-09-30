@@ -109,7 +109,7 @@ stages:
 
                 # Install Terragrunt
                 - bash: |
-                    curl -Ls https://github.com/gruntwork-io/terragrunt/releases/download/v${terragruntVersion}/terragrunt_linux_amd64 -o terragrunt
+                    curl -Ls https://github.com/gruntwork-io/terragrunt/releases/download/v0.39.0/terragrunt_linux_amd64 -o terragrunt
                     chmod +x terragrunt
                     mv terragrunt /usr/local/bin/    
                   displayName: Install Terragrunt
