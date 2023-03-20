@@ -18,7 +18,7 @@ pr: none
 variables:
   terraformVersion: 1.0.5
   terragruntVersion: 0.39.0
-  dataHubHelmChartVersion: 0.2.88
+  dataHubHelmChartVersion: 0.2.151
 
 pool:
   vmImage: ubuntu-latest
