@@ -90,18 +90,6 @@ stages:
                   artifact: terraform
                   displayName: "Download Artifact: terraform"
 
-                # Apply and output Terragrunt
-                - task: AWSShellScript@1
-                  displayName: Apply and output Terragrunt
-                  inputs:
-                    awsCredentials: "dataplatform-aws-deploy"
-                    regionName: "eu-central-1"
-                    scriptType: "inline"
-                    inlineScript: |
-                      terragrunt apply -auto-approve
-                      terragrunt output -json > output.json
-                    disableAutoCwd: true
-                    workingDirectory: "$(Pipeline.Workspace)/terraform/terragrunt/dev"
 
                 # Terraform output to variables
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
