@@ -79,12 +79,6 @@ stages:
                     terraformVersion: $(terraformVersion)
 
                 # Install Terragrunt
-                - task: Bash@3
-                  inputs:
-                    targetType: "inline"
-                    script: "brew install terragrunt"
-
-                # Install Terragrunt
                 - bash: |
                     curl -Ls https://github.com/gruntwork-io/terragrunt/releases/download/v${terragruntVersion}/terragrunt_linux_amd64 -o terragrunt
                     chmod +x terragrunt
