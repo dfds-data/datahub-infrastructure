@@ -81,12 +81,13 @@ stages:
                   inputs:
                     terraformVersion: $(terraformVersion)
 
+
                 # Install Terragrunt
-                - bash: |
-                    curl -Ls https://github.com/gruntwork-io/terragrunt/releases/download/v${terragruntVersion}/terragrunt_linux_amd64 -o terragrunt
-                    chmod +x terragrunt
-                    mv terragrunt /usr/local/bin/    
-                  displayName: Install Terragrunt
+                - task: Bash@3
+                  inputs:
+                    targetType: "inline"
+                    script: "brew install terragrunt"                  
+
 
                 # Download Terraform folder from current artifacts pipeline
                 - download: current
@@ -101,6 +102,7 @@ stages:
                     sudo ./aws/install --update
                   displayName: Install AWS CLI # Will break if you try to run with a build agent that is not on AMD64. If building on an ARM agent, replace x86_64 with aarch64
                 - checkout: self
+            
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
                   inputs:
@@ -254,11 +256,10 @@ stages:
                     terraformVersion: $(terraformVersion)
 
                 # Install Terragrunt
-                - bash: |
-                    curl -Ls https://github.com/gruntwork-io/terragrunt/releases/download/v${terragruntVersion}/terragrunt_linux_amd64 -o terragrunt
-                    chmod +x terragrunt
-                    mv terragrunt /usr/local/bin/    
-                  displayName: Install Terragrunt
+                - task: Bash@3
+                  inputs:
+                    targetType: "inline"
+                    script: "brew install terragrunt"
 
                 # Download Terraform folder from current artifacts pipeline
                 - download: current
