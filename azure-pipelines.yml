@@ -81,12 +81,12 @@ stages:
                   inputs:
                     terraformVersion: $(terraformVersion)
 
-
                 # Install Terragrunt
                 - task: Bash@3
                   inputs:
                     targetType: "inline"
-                    script: "brew install terragrunt"                  
+                    script: "snap install terragrunt"
+            
 
 
                 # Download Terraform folder from current artifacts pipeline
@@ -259,7 +259,8 @@ stages:
                 - task: Bash@3
                   inputs:
                     targetType: "inline"
-                    script: "brew install terragrunt"
+                    script: "snap install terragrunt"
+
 
                 # Download Terraform folder from current artifacts pipeline
                 - download: current
