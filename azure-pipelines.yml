@@ -71,6 +71,9 @@ stages:
           runOnce:
             deploy:
               steps:
+                # Setup auth against k8s
+
+
                 # Terragrunt
 
                 # Install terraform
@@ -89,6 +92,26 @@ stages:
                 - download: current
                   artifact: terraform
                   displayName: "Download Artifact: terraform"
+
+
+                - bash: |
+                    set -eu -o pipefail
+                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                    unzip awscliv2.zip
+                    sudo ./aws/install --update
+                  displayName: Install AWS CLI # Will break if you try to run with a build agent that is not on AMD64. If building on an ARM agent, replace x86_64 with aarch64
+                - checkout: self
+                - task: AWSShellScript@1
+                  displayName: Apply and output Terragrunt
+                  inputs:
+                    awsCredentials: "dataplatform-aws-deploy"
+                    regionName: "eu-central-1"
+                    scriptType: "inline"
+                    inlineScript: |
+                      terragrunt apply -auto-approve
+                      terragrunt output -json > output.json
+                    disableAutoCwd: true
+                    workingDirectory: "$(Pipeline.Workspace)/terraform/terragrunt/dev"
 
 
                 # Terraform output to variables
@@ -194,6 +217,34 @@ stages:
           runOnce:
             deploy:
               steps:
+                # Setup auth against k8s
+                - bash: |
+                    VERSION=1.14.6
+                    BUILD_DATE=2019-08-22
+                    DOWNLOAD_URL=https://amazon-eks.s3-us-west-2.amazonaws.com/${VERSION}/${BUILD_DATE}/bin/linux/amd64/aws-iam-authenticator
+                    LOCAL_FILE=./aws-iam-authenticator
+                    curl -Lo $LOCAL_FILE $DOWNLOAD_URL
+                    chmod +x $LOCAL_FILE
+                    sudo mv $LOCAL_FILE /usr/local/bin
+
+                    # Install saml2aws
+                    VERSION=2.20.0
+                    DOWNLOAD_URL=https://github.com/Versent/saml2aws/releases/download/v${VERSION}/saml2aws_${VERSION}_linux_amd64.tar.gz
+                    LOCAL_FILE=./saml2aws.tar.gz
+                    curl -Lo $LOCAL_FILE $DOWNLOAD_URL
+                    tar xvzf $LOCAL_FILE
+                    rm $LOCAL_FILE
+                    sudo mv saml2aws /usr/local/bin
+
+                    # Configure saml2aws
+                    saml2aws configure --url=https://adfs.dfds.com/adfs/ls/IdpInitiatedSignOn.aspx --idp-provider=ADFS --mfa=Auto --session-duration=28800 --skip-prompt
+
+                    saml2aws login --url=https://adfs.dfds.com/adfs/ls/IdpInitiatedSignOn.aspx --idp-provider=ADFS --mfa=Auto --skip-prompt --force --disable-keychain
+                    eval $(saml2aws script --url=https://adfs.dfds.com/adfs/ls/IdpInitiatedSignOn.aspx --idp-provider=ADFS --mfa=Auto)
+                  env:
+                    SAML2AWS_PASSWORD: $(SAML2AWS_PASSWORD)
+                    SAML2AWS_USERNAME: $(SAML2AWS_USERNAME)
+                    SAML2AWS_ROLE: $(SAML2AWS_ROLE)
 
                 # Terragrunt
 
