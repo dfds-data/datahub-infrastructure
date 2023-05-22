@@ -17,7 +17,7 @@ pr: none
 # Global variables for the pipeline
 variables:
   terraformVersion: 1.0.5
-  terragruntVersion: 0.39.0
+  terragruntVersion: 0.45.15
   dataHubHelmChartVersion: 0.2.151
 
 pool:
