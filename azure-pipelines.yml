@@ -85,7 +85,7 @@ stages:
                 - bash: |
                     curl -Ls https://github.com/gruntwork-io/terragrunt/releases/download/v${terragruntVersion}/terragrunt_linux_amd64 -o terragrunt
                     chmod +x terragrunt
-                    sudo mv terragrunt /usr/local/bin/    
+                    sudo mv terragrunt /usr/local/bin/terragrunt    
                   displayName: Install Terragrunt
             
 
