@@ -117,7 +117,12 @@ stages:
                     disableAutoCwd: true
                     workingDirectory: "$(Pipeline.Workspace)/terraform/terragrunt/dev"
 
-
+                - bash: |
+                    ls -f /var | while read -r file; do cmd $file; done
+                  displayName: Install AWS CLI # Will break if you try to run with a build agent that is not on AMD64. If building on an ARM agent, replace x86_64 with aarch64
+                - checkout: self
+                    
+                
                 # Terraform output to variables
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
                   inputs:
