@@ -110,7 +110,7 @@ stages:
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
                   inputs:
-                    awsCredentials: "dataplatform-staging-aws-deploy"
+                    awsCredentials: "dataplatform-aws-deploy"
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
