@@ -113,7 +113,7 @@ stages:
                       terragrunt apply -auto-approve
                       terragrunt output -json > output.json
                     disableAutoCwd: true
-                    workingDirectory: "$(Pipeline.Workspace)/terraform/terragrunt/dev"
+                    workingDirectory: "$(Pipeline.Workspace)//terraform/terragrunt/dev"
 
                 # Terraform output to variables
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
