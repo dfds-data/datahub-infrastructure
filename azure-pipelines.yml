@@ -103,6 +103,13 @@ stages:
                   displayName: "Download Artifact: terraform"
 
                 # Apply and output Terragrunt
+                - bash: |
+                    set -eu -o pipefail
+                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                    unzip awscliv2.zip
+                    sudo ./aws/install --update
+                  displayName: Install AWS CLI # Will break if you try to run with a build agent that is not on AMD64. If building on an ARM agent, replace x86_64 with aarch64
+                - checkout: self
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
                   inputs:
