@@ -70,7 +70,7 @@ stages:
     - group: "saml2aws-dev"
 
     jobs:
-      - deployment: K8s
+      - deployment: Terragrunt
         displayName: "Terragrunt"
         variables:
           AWS_PROFILE: "saml"
