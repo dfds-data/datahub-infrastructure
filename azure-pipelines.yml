@@ -67,7 +67,6 @@ stages:
     - group: "datahub-dev"
     - group: "K8s-dev"
     - group: "kafka-dev"
-    - group: "saml2aws-dev"
 
     jobs:
       - deployment: K8s
