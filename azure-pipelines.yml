@@ -35,7 +35,7 @@ stages:
   - stage: CI
     displayName: "Continuous Integration"
 
-    
+
     # Build jobs
     jobs:
       - job: Build
@@ -93,7 +93,13 @@ stages:
                 - task: Bash@3
                   inputs:
                     targetType: "inline"
-                    script: "sudo snap install terragrunt"
+                    script: |
+                      terragruntVersion="0.31.0"
+                      terragruntUrl="https://github.com/gruntwork-io/terragrunt/releases/download/v${terragruntVersion}/terragrunt_linux_amd64"
+                      installDir="/usr/local/bin"
+                      wget -q "${terragruntUrl}" -O "terragrunt"
+                      chmod +x "terragrunt"
+                      sudo mv "terragrunt" "${installDir}/terragrunt"
 
                 # Download Terraform folder from current artifacts pipeline
                 - download: current
