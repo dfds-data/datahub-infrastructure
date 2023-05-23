@@ -127,8 +127,8 @@ stages:
           k8s_service_connection: "$(K8S_SERVICECONNECTION)"
           deployment_environment: "datahub-dev"
 
-      - deployment: K8s
-        displayName: "Deploy to Kubernetes"
+      - deployment: K8s_2
+        displayName: "Deploy to Kubernetes_2"
         variables:
           AWS_PROFILE: "saml"
         environment: "datahub-dev"        
