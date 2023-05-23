@@ -117,7 +117,7 @@ stages:
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
-                      terragrunt apply -auto-approve
+                      terragrunt apply -input=false
                       terragrunt output -json > output.json
                     disableAutoCwd: true
                     workingDirectory: "$(Pipeline.Workspace)//terraform/terragrunt/dev"
