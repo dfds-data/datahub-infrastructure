@@ -71,7 +71,7 @@ stages:
 
     jobs:
       - deployment: K8s
-        displayName: "Deploy to Kubernetes"
+        displayName: "Terragrunt"
         variables:
           AWS_PROFILE: "saml"
         environment: "datahub-dev"        
@@ -121,11 +121,21 @@ stages:
                     jsonFile: "$(Pipeline.Workspace)/terraform/terragrunt/dev/output.json"
 
 
-                - template: k8s-deployment.yaml@templates
-                  parameters:
-                    k8s_namespace: $(K8S_NAMESPACE)
-                    k8s_service_connection: "$(K8S_SERVICECONNECTION)"
-                    deployment_environment: "datahub-dev"
+      - template: k8s-deployment.yaml@templates
+        parameters:
+          k8s_namespace: $(K8S_NAMESPACE)
+          k8s_service_connection: "$(K8S_SERVICECONNECTION)"
+          deployment_environment: "datahub-dev"
+
+      - deployment: K8s
+        displayName: "Deploy to Kubernetes"
+        variables:
+          AWS_PROFILE: "saml"
+        environment: "datahub-dev"        
+        strategy:
+          runOnce:
+            deploy:
+              steps:
 
                 # DataHub
                 # Install the Helm binary to the host machine
