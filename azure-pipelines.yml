@@ -70,8 +70,8 @@ stages:
     - group: "saml2aws-dev"
 
     jobs:
-      - deployment: Terragrunt
-        displayName: "Terragrunt"
+      - deployment: K8s
+        displayName: "Deploy to Kubernetes"
         variables:
           AWS_PROFILE: "saml"
         environment: "datahub-dev"        
@@ -120,22 +120,36 @@ stages:
                   inputs:
                     jsonFile: "$(Pipeline.Workspace)/terraform/terragrunt/dev/output.json"
 
+                # Download manifest from current artifacts pipeline
+                - download: current
+                  artifact: manifests
+                  displayName: "Download Artifact: manifests"
 
-      - template: k8s-deployment.yaml@templates
-        parameters:
-          k8s_namespace: $(K8S_NAMESPACE)
-          k8s_service_connection: "$(K8S_SERVICECONNECTION)"
-          deployment_environment: "datahub-dev"
+                # Replace token values in yaml files with pipeline variables
+                - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+                  displayName: "Replace tokens in yaml files"
+                  inputs:
+                    rootDirectory: "$(Pipeline.Workspace)/manifests/"
+                    targetFiles: |
+                      **/*.yaml
+                      **/*.yml
+                    tokenPrefix: "$("
+                    tokenSuffix: ")"
+                    actionOnMissing: "fail"
 
-      - deployment: K8s_2
-        displayName: "Deploy to Kubernetes_2"
-        variables:
-          AWS_PROFILE: "saml"
-        environment: "datahub-dev"        
-        strategy:
-          runOnce:
-            deploy:
-              steps:
+                # Apply Kubernetes manifests
+                - task: Kubernetes@1
+                  displayName: "Apply manifests"
+                  # There are sometimes intermittent failures in Azure Pipelines. This will retry the task 3 times before failing.
+                  retryCountOnTaskFailure: 3
+                  inputs:
+                    connectionType: Kubernetes Service Connection
+                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
+                    namespace: $(K8S_NAMESPACE)
+                    command: apply
+                    arguments: "-f $(Pipeline.Workspace)/manifests/"
+                    versionSpec: 1.23.16
+
 
                 # DataHub
                 # Install the Helm binary to the host machine
