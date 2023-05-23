@@ -85,7 +85,7 @@ stages:
                 - bash: |
                     terragruntUrl="https://github.com/gruntwork-io/terragrunt/releases/download/v${terragruntVersion}/terragrunt_linux_amd64"
                     installDir="/usr/local/bin"
-                    curl -Ls "${terragruntUrl}" -o "terragrunt"
+                    wget -q "${terragruntUrl}" -O "terragrunt"
                     chmod +x "terragrunt"
                     sudo mv "terragrunt" "${installDir}/terragrunt"
                     echo "Terragrunt installation complete." 
