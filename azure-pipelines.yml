@@ -110,7 +110,7 @@ stages:
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
                   inputs:
-                    awsCredentials: "dataplatform-aws-deploy"
+                    awsCredentials: "dataplatform-staging-aws-deploy"
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
@@ -119,6 +119,7 @@ stages:
                       terragrunt output -json > output.json
                     disableAutoCwd: true
                     workingDirectory: "$(Pipeline.Workspace)//terraform/terragrunt/dev"
+                    failOnStandardError: true
 
                 # Terraform output to variables
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
