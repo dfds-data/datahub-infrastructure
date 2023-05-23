@@ -118,7 +118,20 @@ stages:
                     workingDirectory: "$(Pipeline.Workspace)/terraform/terragrunt/dev"
 
                 - bash: |
-                    ls -f /var | while read -r file; do cmd $file; done
+
+                    output_file="$(Pipeline.Workspace)/terraform/terragrunt/dev/output.json"
+
+                    # Check if the output file exists
+                    if [ -f "$output_file" ]; then
+                      # Read the content of the output file
+                      output_content=$(cat "$output_file")
+                      echo "Output content:"
+                      echo "$output_content"
+                    else
+                      echo "Output file not found: $output_file"
+                      exit 1
+                    fi
+
                   displayName: Install AWS CLI # Will break if you try to run with a build agent that is not on AMD64. If building on an ARM agent, replace x86_64 with aarch64
                 - checkout: self
                     
