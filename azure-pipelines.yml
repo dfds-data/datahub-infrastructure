@@ -103,6 +103,7 @@ stages:
                     unzip awscliv2.zip
                     sudo ./aws/install --update
                   displayName: Install AWS CLI # Will break if you try to run with a build agent that is not on AMD64. If building on an ARM agent, replace x86_64 with aarch64
+
                 - checkout: self
             
                 - task: AWSShellScript@1
@@ -131,9 +132,11 @@ stages:
                       echo "Output file not found: $output_file"
                       exit 1
                     fi
-
-                  displayName: Install AWS CLI # Will break if you try to run with a build agent that is not on AMD64. If building on an ARM agent, replace x86_64 with aarch64
-                - checkout: self
+                  displayName: Check JSON # Will break if you try to run with a build agent that is not on AMD64. If building on an ARM agent, replace x86_64 with aarch64
+                
+                - bash: |
+                    cat "$(Pipeline.Workspace)/terraform/terragrunt/dev/output.json"
+                  displayName: Read Terragrunt Output
                     
                 
                 # Terraform output to variables
