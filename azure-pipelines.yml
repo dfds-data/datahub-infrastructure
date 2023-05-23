@@ -72,8 +72,6 @@ stages:
     jobs:
       - deployment: K8s
         displayName: "Deploy to Kubernetes"
-        variables:
-          AWS_PROFILE: "saml"
         environment: "datahub-dev"        
         strategy:
           runOnce:
