@@ -147,7 +147,10 @@ stages:
                   inputs:
                     targetType: "inline"
                     script: |
-                      aws eks get-token
+                      set -euo pipefail
+                      wget -O aws-iam-authenticator wget -O aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.5.9/aws-iam-authenticator_0.5.9_linux_ard64
+                      chmod +x aws-iam-authenticator
+                      sudo mv aws-iam-authenticator /usr/local/bin/
 
                 # Apply Kubernetes manifests
                 - task: Kubernetes@1
