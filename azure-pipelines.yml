@@ -142,6 +142,14 @@ stages:
                     tokenSuffix: ")"
                     actionOnMissing: "fail"
 
+                - task: Bash@3
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.22.0/2021-07-05/bin/linux/amd64/aws-iam-authenticator
+                      chmod +x aws-iam-authenticator
+                      sudo mv aws-iam-authenticator /usr/local/bin/
+
                 # Apply Kubernetes manifests
                 - task: Kubernetes@1
                   displayName: "Apply manifests"
