@@ -142,14 +142,12 @@ stages:
                     tokenSuffix: ")"
                     actionOnMissing: "fail"
 
+                # Install aws-iam-authenticator
                 - task: Bash@3
                   inputs:
                     targetType: "inline"
                     script: |
-                      set -euo pipefail
-                      wget -O aws-iam-authenticator wget -O aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.5.2/aws-iam-authenticator_0.5.2_linux_amd64
-                      chmod +x aws-iam-authenticator
-                      sudo mv aws-iam-authenticator /usr/local/bin/
+                      aws eks get-token
 
                 # Apply Kubernetes manifests
                 - task: Kubernetes@1
