@@ -17,24 +17,18 @@ pr: none
 # Global variables for the pipeline
 variables:
   terraformVersion: 1.0.5
-  terragruntVersion: 0.31.0
-  dataHubHelmChartVersion: 0.2.151
+  terragruntVersion: 0.39.0
+  dataHubHelmChartVersion: 0.2.88
 
 pool:
   vmImage: ubuntu-20.04
 
-resources:
-  repositories:
-    - repository: templates
-      type: git
-      name: "Smart Data/pipeline_templates"
-      ref: refs/tags/v0.6.0
+
 
 stages:
   # Continuous Integration steps
   - stage: CI
     displayName: "Continuous Integration"
-
 
     # Build jobs
     jobs:
@@ -56,6 +50,8 @@ stages:
             artifact: datahub
             displayName: "Publish Artifact: datahub"
 
+
+
   # Continuous Deployment steps
   - stage: CDD
     displayName: "Continuous Deployment"
@@ -67,13 +63,10 @@ stages:
     - group: "datahub-dev"
     - group: "K8s-dev"
     - group: "kafka-dev"
-    - group: "saml2aws-dev"
 
     jobs:
       - deployment: K8s
         displayName: "Deploy to Kubernetes"
-        variables:
-          AWS_PROFILE: "saml"
         environment: "datahub-dev"        
         strategy:
           runOnce:
@@ -103,6 +96,13 @@ stages:
                   displayName: "Download Artifact: terraform"
 
                 # Apply and output Terragrunt
+                - bash: |
+                    set -eu -o pipefail
+                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                    unzip awscliv2.zip
+                    sudo ./aws/install --update
+                  displayName: Install AWS CLI # Will break if you try to run with a build agent that is not on AMD64. If building on an ARM agent, replace x86_64 with aarch64
+                - checkout: self
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
                   inputs:
@@ -110,6 +110,7 @@ stages:
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
+                      aws s3 ls
                       terragrunt apply -auto-approve
                       terragrunt output -json > output.json
                     disableAutoCwd: true
@@ -119,6 +120,7 @@ stages:
                 - task: OneLuckiDev.json2variable.vsts-json-to-variable.oneLuckiDevJson2Variable@1
                   inputs:
                     jsonFile: "$(Pipeline.Workspace)/terraform/terragrunt/dev/output.json"
+
 
                 # Download manifest from current artifacts pipeline
                 - download: current
@@ -144,12 +146,11 @@ stages:
                   retryCountOnTaskFailure: 3
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: "$(K8S_SERVICECONNECTION)"
+                    kubernetesServiceEndpoint: "Kubernetes-Hellman-DataPlatform"
                     namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
                     versionSpec: 1.23.16
-
 
                 # DataHub
                 # Install the Helm binary to the host machine
@@ -177,7 +178,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
+                    kubernetesServiceConnection: "Kubernetes-Hellman-DataPlatform"
                     namespace: $(K8S_NAMESPACE)
                     command: "repo"
                     arguments: "add datahub https://helm.datahubproject.io/"
@@ -186,7 +187,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: $(K8S_SERVICECONNECTION)
+                    kubernetesServiceConnection: "Kubernetes-Hellman-DataPlatform"
                     namespace: $(K8S_NAMESPACE)
                     command: "upgrade"
                     chartType: "Name"
@@ -198,6 +199,8 @@ stages:
                       "-i -f $(Pipeline.Workspace)/datahub/values.yaml -f
                       $(Pipeline.Workspace)/datahub/dfdsvals.yaml"
                     waitForExecution: false
+                    
+
 
   # Continuous Deployment steps
   - stage: CD
@@ -223,36 +226,6 @@ stages:
           runOnce:
             deploy:
               steps:
-                # Setup auth against k8s
-                - bash: |
-                    VERSION=1.14.6
-                    BUILD_DATE=2019-08-22
-                    DOWNLOAD_URL=https://amazon-eks.s3-us-west-2.amazonaws.com/${VERSION}/${BUILD_DATE}/bin/linux/amd64/aws-iam-authenticator
-                    LOCAL_FILE=./aws-iam-authenticator
-                    curl -Lo $LOCAL_FILE $DOWNLOAD_URL
-                    chmod +x $LOCAL_FILE
-                    sudo mv $LOCAL_FILE /usr/local/bin
-
-                    # Install saml2aws
-                    VERSION=2.20.0
-                    DOWNLOAD_URL=https://github.com/Versent/saml2aws/releases/download/v${VERSION}/saml2aws_${VERSION}_linux_amd64.tar.gz
-                    LOCAL_FILE=./saml2aws.tar.gz
-                    curl -Lo $LOCAL_FILE $DOWNLOAD_URL
-                    tar xvzf $LOCAL_FILE
-                    rm $LOCAL_FILE
-                    sudo mv saml2aws /usr/local/bin
-
-                    # Configure saml2aws
-                    saml2aws configure --url=https://adfs.dfds.com/adfs/ls/IdpInitiatedSignOn.aspx --idp-provider=ADFS --mfa=Auto --session-duration=28800 --skip-prompt
-
-                    saml2aws login --url=https://adfs.dfds.com/adfs/ls/IdpInitiatedSignOn.aspx --idp-provider=ADFS --mfa=Auto --skip-prompt --force --disable-keychain
-                    eval $(saml2aws script --url=https://adfs.dfds.com/adfs/ls/IdpInitiatedSignOn.aspx --idp-provider=ADFS --mfa=Auto)
-                  env:
-                    SAML2AWS_PASSWORD: $(SAML2AWS_PASSWORD)
-                    SAML2AWS_USERNAME: $(SAML2AWS_USERNAME)
-                    SAML2AWS_ROLE: $(SAML2AWS_ROLE)
-
-                # Terragrunt
 
                 # Install terraform
                 - task: TerraformInstaller@0
@@ -263,7 +236,13 @@ stages:
                 - task: Bash@3
                   inputs:
                     targetType: "inline"
-                    script: "sudo snap install terragrunt"
+                    script: |
+                      terragruntVersion="0.31.0"
+                      terragruntUrl="https://github.com/gruntwork-io/terragrunt/releases/download/v${terragruntVersion}/terragrunt_linux_amd64"
+                      installDir="/usr/local/bin"
+                      wget -q "${terragruntUrl}" -O "terragrunt"
+                      chmod +x "terragrunt"
+                      sudo mv "terragrunt" "${installDir}/terragrunt"
 
                 # Download Terraform folder from current artifacts pipeline
                 - download: current
