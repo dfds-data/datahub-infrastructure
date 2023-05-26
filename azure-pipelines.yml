@@ -54,7 +54,7 @@ stages:
 
   # Continuous Deployment steps
   - stage: CDD
-    displayName: "Continuous Deployment"
+    displayName: "Continuous Deployment Dev"
     dependsOn: CI
     # Run CD only if CI succeeds
     condition: succeeded()
@@ -146,7 +146,7 @@ stages:
                   retryCountOnTaskFailure: 3
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: "Kubernetes-Hellman-DataPlatform"
+                    kubernetesServiceEndpoint: "Kubernetes-Hellman-sandbox-mamor"
                     namespace: $(K8S_NAMESPACE)
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
@@ -178,7 +178,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: "Kubernetes-Hellman-DataPlatform"
+                    kubernetesServiceConnection: "Kubernetes-Hellman-sandbox-mamor"
                     namespace: $(K8S_NAMESPACE)
                     command: "repo"
                     arguments: "add datahub https://helm.datahubproject.io/"
@@ -187,7 +187,7 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: "Kubernetes-Hellman-DataPlatform"
+                    kubernetesServiceConnection: "Kubernetes-Hellman-sandbox-mamor"
                     namespace: $(K8S_NAMESPACE)
                     command: "upgrade"
                     chartType: "Name"
@@ -204,7 +204,7 @@ stages:
 
   # Continuous Deployment steps
   - stage: CD
-    displayName: "Continuous Deployment"
+    displayName: "Continuous Deployment Prod"
     dependsOn: CDD
     # Run CD only if CI succeeds
     condition: succeeded()
