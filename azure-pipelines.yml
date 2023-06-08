@@ -54,7 +54,7 @@ stages:
 
   # Continuous Deployment steps
   - stage: CDD
-    displayName: "Continuous Deployment"
+    displayName: "Continuous Deployment Dev"
     dependsOn: CI
     # Run CD only if CI succeeds
     condition: succeeded()
@@ -106,7 +106,7 @@ stages:
                 - task: AWSShellScript@1
                   displayName: Apply and output Terragrunt
                   inputs:
-                    awsCredentials: "dataplatform-aws-deploy"
+                    awsCredentials: "sandbox-mamor-aws-deploy"
                     regionName: "eu-central-1"
                     scriptType: "inline"
                     inlineScript: |
@@ -146,8 +146,8 @@ stages:
                   retryCountOnTaskFailure: 3
                   inputs:
                     connectionType: Kubernetes Service Connection
-                    kubernetesServiceEndpoint: "Kubernetes-Hellman-DataPlatform"
-                    namespace: $(K8S_NAMESPACE)
+                    kubernetesServiceEndpoint: "Kubernetes-Hellman-sandbox-mamor"
+                    namespace: "sandbox-mamor-pyrab"
                     command: apply
                     arguments: "-f $(Pipeline.Workspace)/manifests/"
                     versionSpec: 1.23.16
@@ -178,8 +178,8 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: "Kubernetes-Hellman-DataPlatform"
-                    namespace: $(K8S_NAMESPACE)
+                    kubernetesServiceConnection: "Kubernetes-Hellman-sandbox-mamor"
+                    namespace: "sandbox-mamor-pyrab"
                     command: "repo"
                     arguments: "add datahub https://helm.datahubproject.io/"
 
@@ -187,8 +187,8 @@ stages:
                 - task: HelmDeploy@0
                   inputs:
                     connectionType: "Kubernetes Service Connection"
-                    kubernetesServiceConnection: "Kubernetes-Hellman-DataPlatform"
-                    namespace: $(K8S_NAMESPACE)
+                    kubernetesServiceConnection: "Kubernetes-Hellman-sandbox-mamor"
+                    namespace: "sandbox-mamor-pyrab"
                     command: "upgrade"
                     chartType: "Name"
                     chartName: "datahub/datahub"
@@ -204,7 +204,7 @@ stages:
 
   # Continuous Deployment steps
   - stage: CD
-    displayName: "Continuous Deployment"
+    displayName: "Continuous Deployment Prod"
     dependsOn: CDD
     # Run CD only if CI succeeds
     condition: succeeded()
