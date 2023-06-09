@@ -2,7 +2,7 @@
 remote_state {
   backend = "s3"
   config = {
-    bucket         = "dfds-datacatalogue-terraform-dev"
+    bucket         = "dfds-datacatalogue-terraform-dev-mamor"
     key            = "terraform"
     region         = "eu-central-1"
     encrypt        = true
