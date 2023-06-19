@@ -11,6 +11,7 @@ terraform {
 
 locals {
   name = "datacatalogue"
+
   tags = {
     Name        = "datacatalogue"
     Environment = "${var.env}"
@@ -59,7 +60,7 @@ module "security_group" {
 
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "3.3.0"
+  version = "5.9.0"
 
   identifier = local.name
 
@@ -73,12 +74,13 @@ module "db" {
   instance_class              = "db.t3.micro"
   allow_major_version_upgrade = true
 
-  allocated_storage = 20
+  allocated_storage     = 20
+  max_allocated_storage = 50
 
   # NOTE: Do NOT use 'user' as the value for 'username' as it throws:
   # "Error creating DB Instance: InvalidParameterValue: MasterUsername
   # user cannot be used as it is a reserved word used by the engine"
-  name                   = local.name
+  /* name                   = local.name */
   username               = "superuser"
   create_random_password = true
   random_password_length = 32
@@ -112,11 +114,11 @@ resource "aws_ssm_parameter" "database_password" {
 // Elastic
 
 resource "random_string" "es-unique-identifier" {
-  length  = 5
-  special = false
-  lower   = true
-  upper   = false
-  number  = true
+  length   = 5
+  special  = false
+  lower    = true
+  upper    = false
+  numeric  = true
 }
 
 module "es-password" {
