@@ -1,7 +1,7 @@
 resource "random_password" "password" {
   length           = 32
   special          = true
-  number           = true
+  numeric           = true
   lower            = true
   upper            = true
   override_special = "!_.-=*"
